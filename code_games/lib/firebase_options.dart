@@ -70,6 +70,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '446890860022',
     projectId: 'codegames-ae810',
     storageBucket: 'codegames-ae810.appspot.com',
+    androidClientId: '446890860022-hoa7oc2f0cn6vh96ned8n3v2n2q466ci.apps.googleusercontent.com',
+    iosClientId: '446890860022-854lduaseqmgavs184uap8f67293219n.apps.googleusercontent.com',
     iosBundleId: 'com.example.codeGames',
   );
 }

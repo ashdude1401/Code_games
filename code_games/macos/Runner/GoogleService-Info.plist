@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyC34mTPX8VoR21zE0nSz3MqwdVEjlS2vSQ</string>
+	<key>GCM_SENDER_ID</key>
+	<string>446890860022</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.codeGames.RunnerTests</string>
+	<key>PROJECT_ID</key>
+	<string>codegames-ae810</string>
+	<key>STORAGE_BUCKET</key>
+	<string>codegames-ae810.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:446890860022:ios:d11f7014a5062f62a7bbd7</string>
+</dict>
+</plist>

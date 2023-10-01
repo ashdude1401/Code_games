@@ -12,7 +12,20 @@
           "package_name": "com.example.code_games"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "446890860022-hoa7oc2f0cn6vh96ned8n3v2n2q466ci.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.code_games",
+            "certificate_hash": "42856daf12e2c9bb2e16b38c0570f8c8170506ba"
+          }
+        },
+        {
+          "client_id": "446890860022-0d8272tmuhg3l8bcr9a7mbp6ufcjfbrg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDAOY8OudEjBucn2I6MMFwIwSqTn9xzv6o"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "446890860022-0d8272tmuhg3l8bcr9a7mbp6ufcjfbrg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "446890860022-23m7p958rl3lp5r9k87abgo9qgfrhhcb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.codeGames.RunnerTests"
+              }
+            }
+          ]
         }
       }
     }

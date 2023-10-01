@@ -3,9 +3,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../core/presentation/pages/home/home_view/home_view.dart';
 import '../../../data/repository/authentication_repository_impl.dart';
 import '../welcome/welcome_screen.dart';
-
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class FormHeaderWidget extends StatelessWidget {
@@ -25,28 +26,35 @@ class FormHeaderWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: tCrossAxissAligment == null
-          ? CrossAxisAlignment.start
+          ? CrossAxisAlignment.center
           : tCrossAxissAligment!,
       mainAxisAlignment: tMainAxisAlignment == null
           ? MainAxisAlignment.start
           : tMainAxisAlignment!,
       children: [
         Icon(
-          Icons.home_filled,
+          CupertinoIcons.person_crop_circle_fill_badge_checkmark,
+          color: Colors.white,
           size: imgHeightFraction == null
               ? size.height * 0.2
               : size.height * imgHeightFraction!,
         ),
         Text(
           title,
-          style: Theme.of(context).textTheme.headlineMedium,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 30,
+          ),
         ),
         const SizedBox(
           height: 10,
         ),
         Text(
           subTitle,
-          style: Theme.of(context).textTheme.titleMedium,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 15,
+          ),
         ),
       ],
     );

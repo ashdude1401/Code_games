@@ -6,7 +6,9 @@ class TOutlineButtonTheme {
   /// ---------light Theme
   static final lightOutlineButtonThem = OutlinedButtonThemeData(
     style: OutlinedButton.styleFrom(
-      shape: const RoundedRectangleBorder(),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(8)),
+      ),
       padding: const EdgeInsets.symmetric(vertical: 12),
       side: const BorderSide(color: Colors.deepPurple),
     ),

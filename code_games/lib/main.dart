@@ -1,3 +1,4 @@
+import 'package:code_games/src/features/creating_rooms/data/repository/group_repository_impl.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,8 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   )
       //After intialization firebase creating AuthenticationRepositoryImpl instance to handle all the authentication stuff
-      .then((value) => Get.put(AuthenticationRepositoryImpl()));
+      .then((value) => Get.put(AuthenticationRepositoryImpl()))
+      .then((value) => Get.put(GroupRepositoryImpl()));
 
   runApp(const MyApp());
 }

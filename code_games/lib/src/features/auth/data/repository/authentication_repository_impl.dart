@@ -181,14 +181,18 @@
 // }
 
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:code_games/src/features/auth/data/models/user_modal.dart';
 import 'package:code_games/src/features/auth/data/repository/exceptions/exceptions.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../creating_rooms/data/repository/exception/firestore_expception.dart';
@@ -198,9 +202,7 @@ import '../../presentation/pages/welcome/welcome_screen.dart';
 
 class AuthenticationRepositoryImpl extends GetxController
     implements AuthenticationRepository {
-      
   static AuthenticationRepositoryImpl get instance => Get.find();
-
 
   // Constants for default user data
   static const String defaultUserName = "Code Geek";
@@ -210,7 +212,7 @@ class AuthenticationRepositoryImpl extends GetxController
   final Rx<String> userName = defaultUserName.obs;
   final Rx<String> profilePicture = defaultProfilePicture.obs;
   final Rx<String> email = ''.obs;
-  final Rx<String> bio = ''.obs; 
+  final Rx<String> bio = ''.obs;
   Rx<UserEntity> currentUser = UserEntity(
       userID: '',
       email: '',
@@ -222,16 +224,14 @@ class AuthenticationRepositoryImpl extends GetxController
       lastLoginDate: DateTime.timestamp(),
       groups: []).obs;
 
-
-
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn googleSignIn = GoogleSignIn();
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  late final Rx<User?> firebaseUser;
+  final storage = FirebaseStorage.instance;
 
+  late final Rx<User?> firebaseUser;
 
   @override
   void onReady() {
@@ -319,7 +319,7 @@ class AuthenticationRepositoryImpl extends GetxController
 
       if (kDebugMode) {
         print(
-          "=============google account fetch succesfullty :${googleSignInAccount?.email}=====================");
+            "=============google account fetch succesfullty :${googleSignInAccount?.email}=====================");
       }
       if (googleSignInAccount != null) {
         final GoogleSignInAuthentication googleAuth =
@@ -330,7 +330,7 @@ class AuthenticationRepositoryImpl extends GetxController
         );
         if (kDebugMode) {
           print(
-            "=============google account credential succesfully :${googleAuth.accessToken}=====================");
+              "=============google account credential succesfully :${googleAuth.accessToken}=====================");
         }
         try {
           final userCredential = await _auth.signInWithCredential(credential);
@@ -463,5 +463,61 @@ class AuthenticationRepositoryImpl extends GetxController
       log(e.toString());
     }
     // Check if the user already exists in Firestore
+  }
+
+  //Update the curent user details in the firestore
+  Future<void> updateUserDetails(String name, String bio, XFile? img) async {
+    // Upload the image to Firebase Storage and get the download URL
+    String profilePicture = currentUser.value.profilePicture;
+
+    if (img != null) {
+      try {
+        final ref =
+            storage.ref().child('profile_pictures/${currentUser.value.userID}');
+        await ref.putFile(File(img.path));
+        profilePicture = await ref.getDownloadURL();
+      } catch (e) {
+        Get.snackbar('Error', 'Failed to upload profile picture',
+            snackPosition: SnackPosition.BOTTOM);
+        log(e.toString());
+      }
+    }
+    final updatedUser = UserEntity(
+        userID: currentUser.value.userID,
+        email: currentUser.value.email,
+        password: currentUser.value.password,
+        fullName: name,
+        profilePicture: profilePicture,
+        bio: bio,
+        registrationDate: currentUser.value.registrationDate,
+        lastLoginDate: currentUser.value.lastLoginDate,
+        groups: currentUser.value.groups);
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.value.userID)
+          .update(updatedUser.toMap());
+      currentUser.value = updatedUser;
+      //Also update the firebase user
+      await FirebaseAuth.instance.currentUser!
+          .updateDisplayName(currentUser.value.fullName);
+      await FirebaseAuth.instance.currentUser!
+          .updatePhotoURL(currentUser.value.profilePicture);
+
+      //updating local storage values too
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString(
+          'display_name', firebaseUser.value!.displayName ?? defaultUserName);
+      prefs.setString(
+          'photo_url', firebaseUser.value!.photoURL ?? defaultProfilePicture);
+      prefs.setString('email', firebaseUser.value!.email!);
+    } on FirebaseException catch (e) {
+      FirestoreDbFailure.code(e.code);
+    } catch (e) {
+      Get.snackbar('Error', 'User detail cannot be updated');
+      log(e.toString());
+    }
   }
 }

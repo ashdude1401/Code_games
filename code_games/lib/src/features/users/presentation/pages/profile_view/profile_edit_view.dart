@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:code_games/src/features/auth/data/repository/authentication_repository_impl.dart';
+import 'package:code_games/src/features/creating_rooms/presentation/stateMangement/group_controller.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -15,9 +17,14 @@ class ProfileEditView extends StatefulWidget {
 
 class _ProfileEditViewState extends State<ProfileEditView> {
   final controller = Get.find<AuthenticationRepositoryImpl>();
-  late String _name = 'John Doe'; // Default name
-  late String _bio = 'I am a software developer'; // Default bio
+  final gropuController = Get.put(GroupController());
+
   late XFile? _pickedImage; // Variable to store the picked image file
+
+  final name = TextEditingController();
+  final bio = TextEditingController();
+
+  final _formKey = GlobalKey<FormState>();
 
   // Function to handle image picking from gallery
   Future<void> _pickImage() async {
@@ -32,9 +39,11 @@ class _ProfileEditViewState extends State<ProfileEditView> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    name.text = controller.currentUser.value.fullName;
+    bio.text = controller.currentUser.value.bio.isEmpty
+        ? "Hey there! I am using Code Games"
+        : controller.currentUser.value.bio;
 
-    _name = controller.userName.value;
-    _bio = controller.bio.value;
     _pickedImage = null;
   }
 
@@ -43,6 +52,17 @@ class _ProfileEditViewState extends State<ProfileEditView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
+        actions: [
+          TextButton(
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  gropuController.updateCurrentUserDetails(
+                      name.text, bio.text, _pickedImage);
+                  Get.back();
+                }
+              },
+              child: const Text("Save")),
+        ],
       ),
       body: SingleChildScrollView(
         child: Container(
@@ -60,16 +80,17 @@ class _ProfileEditViewState extends State<ProfileEditView> {
               CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.grey,
-                // backgroundImage: _pickedImage != null
-                //     ? FileImage(File(_pickedImage!.path)) // Display picked image
-                //     : AssetImage('assets/images/profile.png'),
                 child: _pickedImage == null
-                    ? CachedNetworkImage(
-                        imageUrl: controller.profilePicture.value,
-                        placeholder: (context, url) =>
-                            const CircularProgressIndicator(),
-                        errorWidget: (context, url, error) =>
-                            const Icon(Icons.error),
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(50),
+                        child: CachedNetworkImage(
+                          fit: BoxFit.cover,
+                          imageUrl: controller.currentUser.value.profilePicture,
+                          placeholder: (context, url) =>
+                              const CircularProgressIndicator(),
+                          errorWidget: (context, url, error) =>
+                              const Icon(Icons.error),
+                        ),
                       )
                     : ClipRRect(
                         borderRadius: BorderRadius.circular(50),
@@ -88,45 +109,63 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                 child: const Text('Pick Image'),
               ),
               const SizedBox(height: 20),
-              const Text(
-                'Name',
-                style: TextStyle(fontSize: 18.0),
-              ),
-              const SizedBox(height: 5),
-              // Text field to display and edit name
-              TextField(
-                onChanged: (value) =>
-                    _name = value, // Update name when text changes
-                controller:
-                    TextEditingController(text: _name), // Set initial value
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Bio',
-                style: TextStyle(fontSize: 18.0),
-              ),
-              const SizedBox(height: 5),
-              // Text field to display and edit bio
-              TextField(
-                onChanged: (value) =>
-                    _bio = value, // Update bio when text changes
-                controller: TextEditingController(
-                    text: _bio.isEmpty
-                        ? "I am cool"
-                        : controller.bio.value), // Set initial value
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Email',
-                style: TextStyle(fontSize: 18.0),
-              ),
-              const SizedBox(height: 5),
-              TextField(
-                enabled: false,
-                // onChanged: (value) =>
-                //     _bio = value, // Update bio when text changes
-                controller: TextEditingController(
-                    text: controller.email.value), // Set initial value
+              Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    const Text(
+                      'Name',
+                      style: TextStyle(fontSize: 18.0),
+                    ),
+                    const SizedBox(height: 5),
+                    // Text field to display and edit name
+                    TextFormField(
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter some text';
+                        }
+                        return null;
+                      },
+                      // Update name when text changes
+                      controller: name,
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Bio',
+                      style: TextStyle(fontSize: 18.0),
+                    ),
+                    const SizedBox(height: 5),
+                    // Text field to display and edit bio
+                    TextFormField(
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter some text';
+                        }
+                        return null;
+                      },
+                      controller: bio, // Set initial value
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Email',
+                      style: TextStyle(fontSize: 18.0),
+                    ),
+                    const SizedBox(height: 5),
+                    TextFormField(
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter some text';
+                        }
+                        return null;
+                      },
+                      enabled: false,
+                      // onChanged: (value) =>
+                      //     _bio = value, // Update bio when text changes
+                      controller: TextEditingController(
+                          text: controller.email.value), // Set initial value
+                    ),
+                  ],
+                ),
               ), // Display user's email
             ],
           ),

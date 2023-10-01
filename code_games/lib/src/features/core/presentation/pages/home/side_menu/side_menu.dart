@@ -110,7 +110,7 @@ class _SideMenuState extends State<SideMenu> {
                     )),
                 ListTile(
                   onTap: () {
-                    homeViewController.currentPage = GroupsView();
+                    homeViewController.currentPage = const GroupsView();
                     widget.reverse();
                   },
                   leading: Obx(
@@ -131,8 +131,8 @@ class _SideMenuState extends State<SideMenu> {
                 ),
                 ListTile(
                   onTap: () {
-                    Get.to(() => const AllUsersView(),
-                        transition: Transition.rightToLeft);
+                    homeViewController.currentPage = const AllUsersView();
+                    widget.reverse();
                   },
                   leading: Icon(
                     homeViewController.currentPage is AllUsersView

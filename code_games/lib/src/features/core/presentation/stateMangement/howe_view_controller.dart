@@ -9,7 +9,7 @@ import '../../../creating_rooms/presentation/pages/create_join_view/new_group.da
 class HomeViewController extends GetxController {
   List<Widget> pages = [
     NewGroupView(),
-    GroupsView(),
+    const GroupsView(),
     const ProfileEditView(),
     const AllUsersView()
   ];

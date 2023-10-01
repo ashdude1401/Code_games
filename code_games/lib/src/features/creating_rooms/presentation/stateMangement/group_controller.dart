@@ -31,13 +31,12 @@ class GroupController extends GetxController {
     groupDescription.dispose();
     challengeAmount.dispose();
     challengeParameters.dispose();
-    // TODO: implement onClose
     super.onClose();
   }
 
   @override
   void onReady() {
-    getUserRooms();
+    // getUserRooms();
     getAllusers();
 
     super.onReady();
@@ -99,7 +98,7 @@ class GroupController extends GetxController {
     for (var element in userRoomsList) {
       userRooms.value.add(GroupEntity.fromMap(element));
     }
-    isLoading.value = false;
+
     // Print the userRoom names
     for (int i = 0; i < userRooms.value.length; i++) {
       print(
@@ -108,9 +107,12 @@ class GroupController extends GetxController {
 
     print(
         "----------userRoom Length-------------------${userRoomsList.length}");
+    isLoading.value = false;
   }
 
   //-----------------------All User Specific -------------
+
+  //to-do to add these as abstract methods in the GroupRepository
 
   final allUsers = Rx<List<UserEntity>>([]);
   Future<void> getAllusers() async {
@@ -122,6 +124,22 @@ class GroupController extends GetxController {
       isLoading.value = false;
     } catch (e) {
       isLoading.value = false;
+      print("Error: $e");
+    }
+  }
+
+  //Update CurrentUser Details
+
+  void updateCurrentUserDetails(String name, String bio, XFile? img) async {
+    try {
+      isLoading.value = true;
+      await userController.updateUserDetails(name, bio, img);
+      isLoading.value = false;
+      Get.snackbar('Success', 'User Details Updated',
+          snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      isLoading.value = false;
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
       print("Error: $e");
     }
   }

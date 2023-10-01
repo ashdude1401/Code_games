@@ -1,14 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:code_games/src/features/creating_rooms/domain/entity/group_entity.dart';
+
 import 'package:code_games/src/features/creating_rooms/presentation/stateMangement/group_controller.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../group_view/group_view.dart';
 
 class GroupsView extends StatefulWidget {
-  GroupsView({Key? key}) : super(key: key);
+  const GroupsView({Key? key}) : super(key: key);
 
   @override
   State<GroupsView> createState() => _GroupsViewState();
@@ -16,6 +15,13 @@ class GroupsView extends StatefulWidget {
 
 class _GroupsViewState extends State<GroupsView> {
   final controller = Get.put(GroupController());
+
+  @override
+  void initState() {
+    controller.getUserRooms();
+    // TODO: implement initState
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {

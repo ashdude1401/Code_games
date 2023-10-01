@@ -1,8 +1,7 @@
-import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:code_games/src/features/creating_rooms/data/repository/exception/firestore_expception.dart';
-import 'package:code_games/src/features/core/presentation/pages/home/home_view/home_view.dart';
+
+import 'package:firebase_storage/firebase_storage.dart';
 
 import 'package:get/get.dart';
 
@@ -12,44 +11,9 @@ import '../../domain/repository/Group_repository.dart';
 class GroupRepositoryImpl extends GetxController implements GroupRepository {
   //Intializing firestore instance to perform CRUD operations on the database
 
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  // @override
-  // Future<void> createRoom(GroupEntity group) async {
-  //   //Creating a new document in the firestore collection with the group name as the document id
-  //   try {
-  //     firestore.collection('groups').add(group.toMap()).then((value) async {
-  //       //Updating the group id of the group created
-  //       await firestore.collection('groups').doc(value.id).update({
-  //         'groupId': value.id,
-  //       }).then((value) {
-  //         //Updating the list of groups created by the user(seraching for the user with the email id and then updating the list of groups created by the user)
-  //         firestore
-  //             .collection('users')
-  //             .where('email', isEqualTo: group.createdBy)
-  //             .get()
-  //             .then((value) {
-  //           if (value.docs.isNotEmpty) {
-  //             for (var element in value.docs) {
-  //               firestore.collection('users').doc(element.id).update({
-  //                 'groups': FieldValue.arrayUnion([group.groupName])
-  //               });
-  //             }
-  //           }
-  //         }).then((value) {
-  //           Get.back();
-  //           Get.snackbar('Success', 'Room Created Successfully',
-  //               snackPosition: SnackPosition.BOTTOM);
-  //         });
-  //       });
-  //     });
-  //   } on FirebaseException catch (e) {
-  //     FirestoreDbFailure.code(e.code);
-  //     Get.snackbar('Error', e.toString());
-  //   } catch (e) {
-  //     Get.snackbar('Error', e.toString());
-  //   }
-  // }
+  final storage = FirebaseStorage.instance;
 
   @override
   Future<void> createRoom(GroupEntity group) async {
@@ -203,4 +167,8 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
 
     throw UnimplementedError();
   }
+  
+  
+  
+  
 }

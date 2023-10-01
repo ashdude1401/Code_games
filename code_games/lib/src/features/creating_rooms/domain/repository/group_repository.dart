@@ -4,9 +4,8 @@ abstract class GroupRepository {
   //To create a new room
   Future<void> createRoom(GroupEntity group) async {}
 
-
-  //get all users 
-  Future<List<Map<String,dynamic>>> getAllUsers() async {
+  //get all users
+  Future<List<Map<String, dynamic>>> getAllUsers() async {
     // Your code logic goes here
     return [];
   }
@@ -17,6 +16,11 @@ abstract class GroupRepository {
   //To update a room
   Future<void> updateRoom(GroupEntity newGroup, GroupEntity oldGroup) async {}
 
+  // Future<List<Map<String, dynamic>>> getAllusers() async {
+  //   // Your code logic goes here
+  //   return [];
+  // }
+
   //To get all the rooms
   Future<void> getAllRooms() async {}
 
@@ -24,7 +28,7 @@ abstract class GroupRepository {
   Future<void> getRoom(String roomName) async {}
 
   //To get all the rooms in which  specific user is join or created
-  Future<List<Map<String,dynamic>>> getRoomsOfUser(String userEmail) async {
+  Future<List<Map<String, dynamic>>> getRoomsOfUser(String userEmail) async {
     // Your code logic goes here
     return [];
   }

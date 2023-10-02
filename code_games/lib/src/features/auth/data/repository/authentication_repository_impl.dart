@@ -520,4 +520,39 @@ class AuthenticationRepositoryImpl extends GetxController
       log(e.toString());
     }
   }
+
+  //Update the curent user group details in the firestore
+
+  //add group to the user groups
+  Future<void> addGroupToUserGroups(
+      List<String> groupNames, UserEntity user) async {
+    try {
+      //update the user group list of the user
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.value.userID)
+          .update({'groups': FieldValue.arrayUnion(groupNames)});
+    } on FirebaseException catch (e) {
+      FirestoreDbFailure.code(e.code);
+    } catch (e) {
+      log(e.toString());
+    }
+  }
+
+  //remove group from the user groups
+  Future<void> removeGroupFromUserGroup(String groupName) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.value.userID)
+          .update({
+        'groups': FieldValue.arrayRemove([groupName])
+      });
+      currentUser.value.groups.remove(groupName);
+    } on FirebaseException catch (e) {
+      FirestoreDbFailure.code(e.code);
+    } catch (e) {
+      log(e.toString());
+    }
+  }
 }

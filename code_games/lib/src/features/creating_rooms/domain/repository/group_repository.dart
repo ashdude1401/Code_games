@@ -14,7 +14,7 @@ abstract class GroupRepository {
   Future<void> deleteRoom(GroupEntity group) async {}
 
   //To update a room
-  Future<void> updateRoom(GroupEntity newGroup, GroupEntity oldGroup) async {}
+  Future<void> updateRoom( GroupEntity oldGroup) async {}
 
   // Future<List<Map<String, dynamic>>> getAllusers() async {
   //   // Your code logic goes here

@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:code_games/src/features/creating_rooms/presentation/pages/groups_view/groups_view.dart';
 
 import 'package:code_games/src/features/core/presentation/pages/home/side_menu/side_menu.dart';
-import 'package:code_games/src/features/core/presentation/stateMangement/howe_view_controller.dart';
+import 'package:code_games/src/features/core/presentation/stateMangement/home_view_controller.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

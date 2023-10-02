@@ -4,7 +4,7 @@ import 'package:code_games/src/features/creating_rooms/presentation/stateMangeme
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../group_view/group_view.dart';
+import '../group_view/group_chat_view.dart';
 
 class GroupsView extends StatefulWidget {
   const GroupsView({Key? key}) : super(key: key);
@@ -47,8 +47,10 @@ class _GroupsViewState extends State<GroupsView> {
                         itemBuilder: (context, index) {
                           return ListTile(
                             onTap: () {
+                              controller.currentlySelectedGroupIndex.value =
+                                  index;
                               Get.to(
-                                  GroupView(
+                                  () => GroupChatView(
                                       group: controller.userRooms.value[index]),
                                   transition: Transition.rightToLeftWithFade);
                             },

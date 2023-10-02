@@ -140,9 +140,18 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
   }
 
   @override
-  Future<void> updateRoom(GroupEntity newGroup, GroupEntity oldGroup) {
-    // TODO: implement updateRoom
-    throw UnimplementedError();
+  Future<void> updateRoom(GroupEntity newGroup) async {
+    try {
+      await firestore
+          .collection('groups')
+          .doc(newGroup.groupId)
+          .update(newGroup.toMap());
+    } on FirestoreDbFailure catch (e) {
+      Get.snackbar('Error', e.message, snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    }
+   
   }
 
   @override
@@ -167,8 +176,4 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
 
     throw UnimplementedError();
   }
-  
-  
-  
-  
 }

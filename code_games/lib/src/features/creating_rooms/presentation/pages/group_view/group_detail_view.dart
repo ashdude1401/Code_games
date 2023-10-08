@@ -89,12 +89,22 @@ class _GroupDetailViewState extends State<GroupDetailView> {
                   icon: const Icon(CupertinoIcons.pencil_circle_fill),
                 )
               ]),
+              // const SizedBox(height: 20),
+              // _buildExpansionTile('Challenge Details', _buildChallenges()),
               const SizedBox(height: 20),
-              _buildExpansionTile('Challenge Details', _buildChallenges()),
+              Obx(
+                () => _buildListTile(
+                  'Group Members',
+                  _buildMembers(),
+                ),
+              ),
               const SizedBox(height: 20),
-              _buildListTile('Group Members', _buildMembers()),
-              const SizedBox(height: 20),
-              _buildListTile('Administrators', _buildAdmins()),
+              Obx(
+                () => _buildListTile(
+                  'Administrators',
+                  _buildAdmins(),
+                ),
+              ),
             ],
           ),
         ),
@@ -126,19 +136,19 @@ class _GroupDetailViewState extends State<GroupDetailView> {
     );
   }
 
-  Widget _buildChallenges() {
-    return Column(
-      children: controller.userRooms
-          .value[controller.currentlySelectedGroupIndex.value].challengeList
-          .map(
-            (challenge) => ListTile(
-              title: Text(challenge.challengeName),
-              subtitle: Text(challenge.challengeDescription),
-            ),
-          )
-          .toList(),
-    );
-  }
+  // Widget _buildChallenges() {
+  //   return Column(
+  //     children: controller.userRooms
+  //         .value[controller.currentlySelectedGroupIndex.value].challengeList
+  //         .map(
+  //           (challenge) => ListTile(
+  //             title: Text(challenge.challengeName),
+  //             subtitle: Text(challenge.challengeDescription),
+  //           ),
+  //         )
+  //         .toList(),
+  //   );
+  // }
 
   Widget _buildMembers() {
     return Column(

@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:code_games/src/features/creating_rooms/data/repository/group_repository_impl.dart';
 import 'package:code_games/src/features/creating_rooms/domain/entity/group_entity.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -10,7 +12,6 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../auth/data/models/user_modal.dart';
 import '../../../auth/data/repository/authentication_repository_impl.dart';
-import '../pages/group_view/group_detail_view.dart';
 
 enum Method { camera, gallery }
 
@@ -20,6 +21,8 @@ class GroupController extends GetxController {
 
   final isLoading = false.obs;
 
+  Rx<List<GroupEntity>> userRooms = Rx<List<GroupEntity>>([]);
+
   final groupName = TextEditingController();
   final groupDescription = TextEditingController();
   final challengeAmount = TextEditingController();
@@ -28,7 +31,6 @@ class GroupController extends GetxController {
   final challengeList = [];
   final List<GroupMembers> groupMembers = [];
   final List<String> admins = [];
-  Rx<List<GroupEntity>> userRooms = Rx<List<GroupEntity>>([]);
 
   @override
   void onClose() {
@@ -36,6 +38,9 @@ class GroupController extends GetxController {
     groupDescription.dispose();
     challengeAmount.dispose();
     challengeParameters.dispose();
+    messageController.dispose();
+    streamController.close();
+
     super.onClose();
   }
 
@@ -43,6 +48,7 @@ class GroupController extends GetxController {
   void onReady() {
     // getUserRooms();
     getAllusers();
+    userId.value = userController.currentUser.value.userID;
 
     super.onReady();
   }
@@ -85,21 +91,60 @@ class GroupController extends GetxController {
         userRank: '0',
         email: userController.email.value));
     admins.add(userController.email.value);
+
+    //creating three default channels in firebase general , announcements and Challenges
+
     // Create a Group object with the entered data
     final newGroup = GroupEntity(
         groupName: groupName.text,
         groupDescription: groupDescription.text,
         groupImg: profilePicture,
-        challengeList: [],
         groupMembers: groupMembers,
-        groupId: '',
         admins: admins,
-        createdBy: userController.email.value);
+        createdBy: userController.email.value,
+        challengesRefferenceId: [],
+        channelReferenceId: [],
+        groupId: '');
 
     print("----------New Group-------------------${newGroup.groupName}");
 
+    //general channel
+    Channel generalChannel = Channel(
+        channelId: '',
+        channelName: 'General',
+        channelDescription: 'For General discussion',
+        channelImg:
+            'https://plus.unsplash.com/premium_photo-1681488159219-e0f0f2542424?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80',
+        messagesReferenceId: '');
+
+    //announcements channel
+    Channel announcementsChannel = Channel(
+        channelId: '',
+        channelName: 'Announcements',
+        channelDescription: 'For Announcements',
+        channelImg:
+            'https://images.unsplash.com/photo-1529335764857-3f1164d1cb24?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1889&q=80',
+        messagesReferenceId: '');
+
+    //challenges channel
+
+    Channel challengesChannel = Channel(
+        channelId: '',
+        channelName: 'Challenges',
+        channelDescription: 'For Challenges',
+        channelImg:
+            'https://images.unsplash.com/photo-1606663889134-b1dedb5ed8b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1887&q=80',
+        messagesReferenceId: '');
+
+    List<Channel> channels = [
+      generalChannel,
+      announcementsChannel,
+      challengesChannel
+    ];
+
     // Call the createRoom method from the repository
-    await controller.createRoom(newGroup);
+    await controller.createRoom(newGroup, channels);
+
     isLoading.value = false;
 
     groupName.clear();
@@ -137,7 +182,20 @@ class GroupController extends GetxController {
   }
 
   //-----------------------All User Specific -------------
-
+  //Update CurrentUser Details
+  void updateCurrentUserDetails(String name, String bio, XFile? img) async {
+    try {
+      isLoading.value = true;
+      await userController.updateUserDetails(name, bio, img);
+      isLoading.value = false;
+      Get.snackbar('Success', 'User Details Updated',
+          snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      isLoading.value = false;
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+      print("Error: $e");
+    }
+  }
   //to-do to add these as abstract methods in the GroupRepository
 
   final allUsers = Rx<List<UserEntity>>([]);
@@ -150,22 +208,6 @@ class GroupController extends GetxController {
       isLoading.value = false;
     } catch (e) {
       isLoading.value = false;
-      print("Error: $e");
-    }
-  }
-
-  //Update CurrentUser Details
-
-  void updateCurrentUserDetails(String name, String bio, XFile? img) async {
-    try {
-      isLoading.value = true;
-      await userController.updateUserDetails(name, bio, img);
-      isLoading.value = false;
-      Get.snackbar('Success', 'User Details Updated',
-          snackPosition: SnackPosition.BOTTOM);
-    } catch (e) {
-      isLoading.value = false;
-      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
       print("Error: $e");
     }
   }
@@ -209,52 +251,105 @@ class GroupController extends GetxController {
           .any((element) => element.email == user.email)) {
         Get.snackbar('Error', '${user.fullName} already exists in the group',
             snackPosition: SnackPosition.BOTTOM);
+        isLoading.value = false;
+
         return;
       }
     }
 
-    //adding the selected users to the group members list
-    userRooms.value[currentlySelectedGroupIndex.value].groupMembers.addAll(
-      selectedUsers.map(
-        (user) => GroupMembers(
-            userName: user.fullName,
-            userImg: user.profilePicture,
-            userScore: '0',
-            userRank: '0',
-            email: user.email),
-      ),
-    );
-    print(
-        "----------userRoom-------------------${userRooms.value[currentlySelectedGroupIndex.value].groupMembers.length}");
-
-    //Also update each user's group list with the group name
-    for (var user in selectedUsers) {
-      List<String> groupNames = [];
-
-      groupNames
-          .add(userRooms.value[currentlySelectedGroupIndex.value].groupName);
-      await userController.addGroupToUserGroups(groupNames, user);
-
-      for (var groupName in user.groups) {
-        print("----------userRoom-------------------${groupName}");
-      }
-      print("updated user ${user.email}---------------");
+    if (selectedUsers.isEmpty) {
+      isLoading.value = false;
+      Get.snackbar('Error', 'No users selected',
+          snackPosition: SnackPosition.BOTTOM);
+      return;
     }
 
-    print(
-        "-------------------updating user group list finished ---------------");
-    // Update the group in the database
-    await controller
-        .updateRoom(userRooms.value[currentlySelectedGroupIndex.value]);
+    // Add the selected users to the group members list in the database
+    await controller.addMembersToRoom(
+        userRooms.value[currentlySelectedGroupIndex.value].groupId,
+        selectedUsers
+            .map((user) => GroupMembers(
+                userName: user.fullName,
+                userImg: user.profilePicture,
+                userScore: '0',
+                userRank: '0',
+                email: user.email))
+            .toList());
 
-
+    // Add the selected users to the group members list in the userRooms list
+    userRooms.value[currentlySelectedGroupIndex.value].groupMembers.addAll(
+        selectedUsers
+            .map((user) => GroupMembers(
+                userName: user.fullName,
+                userImg: user.profilePicture,
+                userScore: '0',
+                userRank: '0',
+                email: user.email))
+            .toList());
+    // Update the userRooms list
+    isLoading.value = false;
+    getUserRooms();
+    Get.back();
     print("----------userRoom-------------------updated");
     Get.snackbar('Members Added', 'Members added successfully',
         snackPosition: SnackPosition.BOTTOM);
-
-    // Clear the selectedUsers list
     selectedUsers.clear();
-    Get.back();  
+  }
+
+  //-------------------Leaving Group-----------------
+  Future<void> leaveGroup() async {
+    isLoading.value = true;
+    await controller.leaveRoom(
+        userRooms.value[currentlySelectedGroupIndex.value].groupId,
+        userController.email.value);
+    // Update the userRooms list
+    getUserRooms();
+    isLoading.value = false;
+    Get.back();
+  }
+
+//-----------------chat related---------------------------------------------------------------
+  // get all message  returning
+  List<Message> groupMessages = [];
+
+  final TextEditingController messageController = TextEditingController();
+  final userId = "".obs;
+
+  StreamController<QuerySnapshot> streamController =
+      StreamController<QuerySnapshot>();
+
+  Future<void> getMessageStream() async {
+    isLoading.value = true;
+    await streamController.addStream(controller.getMessagesStream(
+        userRooms.value[currentlySelectedGroupIndex.value].groupId));
     isLoading.value = false;
   }
+
+  List<Message> getMessages(AsyncSnapshot<QuerySnapshot<Object?>> snapshot) {
+    final messages = snapshot.data!.docs;
+    List<Message> messagesList = [];
+    for (var message in messages) {
+      messagesList.add(Message.fromMap(message.data() as Map<String, dynamic>));
+    }
+    return messagesList;
+  }
+
+  Future<void> sendMessage() async {
+    print('inside send message');
+    if (messageController.text.isNotEmpty) {
+      print('message is not empty');
+      await controller.sendMessages(
+          userRooms.value[currentlySelectedGroupIndex.value].groupId,
+          Message(
+              messageText: messageController.text,
+              senderId: userController.currentUser.value.userID,
+              timestamp: DateTime.now()));
+      print("message sent");
+      messageController.clear();
+      // getMessages();
+    }
+  }
 }
+
+// function to get id for firebase collections 
+

@@ -1,5 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:code_games/src/features/creating_rooms/presentation/pages/groups_view/groups_view.dart';
+import 'package:code_games/src/features/creating_rooms/presentation/pages/user_group_list_view/user_groups_list_view.dart';
 import 'package:code_games/src/features/users/presentation/pages/all_users_view/all_users_view.dart';
 
 import 'package:flutter/cupertino.dart';
@@ -110,12 +110,12 @@ class _SideMenuState extends State<SideMenu> {
                     )),
                 ListTile(
                   onTap: () {
-                    homeViewController.currentPage = const GroupsView();
+                    homeViewController.currentPage = const UserGroupListView();
                     widget.reverse();
                   },
                   leading: Obx(
                     () => Icon(
-                      homeViewController.currentPage is GroupsView
+                      homeViewController.currentPage is UserGroupListView
                           ? CupertinoIcons.bubble_left_fill
                           : CupertinoIcons.bubble_left,
                       color: Colors.white,

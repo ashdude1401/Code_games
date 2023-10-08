@@ -6,14 +6,14 @@ import 'package:get/get.dart';
 
 import '../group_view/group_chat_view.dart';
 
-class GroupsView extends StatefulWidget {
-  const GroupsView({Key? key}) : super(key: key);
+class UserGroupListView extends StatefulWidget {
+  const UserGroupListView({Key? key}) : super(key: key);
 
   @override
-  State<GroupsView> createState() => _GroupsViewState();
+  State<UserGroupListView> createState() => _UserGroupListViewState();
 }
 
-class _GroupsViewState extends State<GroupsView> {
+class _UserGroupListViewState extends State<UserGroupListView> {
   final controller = Get.put(GroupController());
 
   @override
@@ -27,8 +27,9 @@ class _GroupsViewState extends State<GroupsView> {
   Widget build(BuildContext context) {
     return Container(
         child: Obx(
-      () => controller.isLoading.value == false
-          ? controller.userRooms.value.isNotEmpty
+      () => controller.isLoading.value == true
+          ? const Center(child: CircularProgressIndicator())
+          : controller.userRooms.value.isNotEmpty
               ? Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -69,8 +70,7 @@ class _GroupsViewState extends State<GroupsView> {
                     ),
                   ],
                 )
-              : const Center(child: Text("No Groups Found"))
-          : const Center(child: CircularProgressIndicator()),
+              : const Center(child: Text("No Groups Found")),
     ));
   }
 }

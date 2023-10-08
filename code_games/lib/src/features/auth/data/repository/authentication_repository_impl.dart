@@ -525,13 +525,13 @@ class AuthenticationRepositoryImpl extends GetxController
 
   //add group to the user groups
   Future<void> addGroupToUserGroups(
-      List<String> groupNames, UserEntity user) async {
+      List<String> groupId, UserEntity user) async {
     try {
       //update the user group list of the user
       await FirebaseFirestore.instance
           .collection('users')
           .doc(currentUser.value.userID)
-          .update({'groups': FieldValue.arrayUnion(groupNames)});
+          .update({'groups': FieldValue.arrayUnion(groupId)});
     } on FirebaseException catch (e) {
       FirestoreDbFailure.code(e.code);
     } catch (e) {

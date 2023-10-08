@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:code_games/src/features/auth/data/repository/authentication_repository_impl.dart';
 import 'package:code_games/src/features/creating_rooms/data/repository/exception/firestore_expception.dart';
 
 import 'package:firebase_storage/firebase_storage.dart';
@@ -16,14 +17,50 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
   final storage = FirebaseStorage.instance;
 
   @override
-  Future<void> createRoom(GroupEntity group) async {
+  Future<void> createRoom(GroupEntity group, List<Channel> channels) async {
     try {
-      // Creating a new document in the 'groups' collection and getting the document reference
-      DocumentReference groupDocRef =
-          await firestore.collection('groups').add(group.toMap());
+      //creating a Unique id for the group
+      group.groupId = firestore.collection('groups').doc().id;
+      //creating a group document with the group id and adding the group data to it
+      await firestore
+          .collection('groups')
+          .doc(group.groupId)
+          .set(group.toMap());
 
-      // Updating the group id of the group created
-      await groupDocRef.update({'groupId': groupDocRef.id});
+      print('group created');
+
+      //creating a channel document with the group id and adding the channel data to it
+      for (var channel in channels) {
+        //creating a Unique id for the channel
+        channel.channelId = firestore.collection('groups').doc().id;
+        await firestore
+            .collection('groups')
+            .doc(group.groupId)
+            .collection('channels')
+            .doc(channel.channelId)
+            .set(channel.toMap());
+      }
+
+      print('channel created');
+
+      //creating messages collection for each channel
+      for (var channel in channels) {
+        await firestore
+            .collection('groups')
+            .doc(group.groupId)
+            .collection('channels')
+            .doc(channel.channelId)
+            .collection('messages')
+            .doc()
+            .set({
+          'senderId': AuthenticationRepositoryImpl.instance.currentUser.value.userID,
+          'messageText': 'Welcome to ${group.groupName}',
+          'timestamp': DateTime.now().millisecondsSinceEpoch,
+        });
+      }
+      print('messages created');
+      // DocumentReference groupDocRef =
+      //   await firestore.collection('groups').add(group.toMap());
 
       // Updating the list of groups created by the user
       QuerySnapshot userSnapshot = await firestore
@@ -34,7 +71,7 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
       if (userSnapshot.docs.isNotEmpty) {
         String userId = userSnapshot.docs.first.id;
         await firestore.collection('users').doc(userId).update({
-          'groups': FieldValue.arrayUnion([group.groupName]),
+          'groups': FieldValue.arrayUnion([group.groupId]),
         });
 
         // Get.off(() => HomeView());
@@ -74,14 +111,15 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
       if (userSnapshot.docs.isNotEmpty) {
         userRooms.clear();
         for (var element in userSnapshot.docs) {
-          // Getting the list of groups created by the user or joined by the user
+          // Getting the list of group id created by the user or joined by the user
           var groups = element['groups'] ??
               <String>[]; // Use an empty list if 'groups' is null
 
           if (groups.isNotEmpty) {
+            // Getting the group details of each group id
             var groupsSnapshot = await firestore
                 .collection('groups')
-                .where('groupName', whereIn: element['groups'])
+                .where('groupId', whereIn: groups)
                 .get();
 
             if (groupsSnapshot.docs.isNotEmpty) {
@@ -151,7 +189,6 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
     } catch (e) {
       Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
     }
-   
   }
 
   @override
@@ -176,4 +213,171 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
 
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> addMembersToRoom(
+      String groupId, List<GroupMembers> members) async {
+    //adding the user to the group members list of the group with the given group id
+    try {
+      firestore.collection('groups').doc(groupId).update({
+        'groupMembers':
+            FieldValue.arrayUnion(members.map((e) => e.toMap()).toList()),
+      });
+      //updating the user's group list with the group id
+      for (var member in members) {
+        firestore
+            .collection('users')
+            .where('email', isEqualTo: member.email)
+            .get()
+            .then((value) => {
+                  firestore
+                      .collection('users')
+                      .doc(value.docs.first.id)
+                      .update({
+                    'groups': FieldValue.arrayUnion([groupId]),
+                  })
+                });
+      }
+    } on FirestoreDbFailure catch (e) {
+      Get.snackbar('Error adding Member in DB', e.message,
+          snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      Get.snackbar('Error adding Member in DB', e.toString(),
+          snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  @override
+  Future<void> removeMembersFromRoom(
+      String groupId, List<GroupMembers> members) async {
+    //removing the user from the group members list of the group with the given group id
+    try {
+      firestore.collection('groups').doc(groupId).update({
+        'groupMembers':
+            FieldValue.arrayRemove(members.map((e) => e.toMap()).toList()),
+      });
+      //updating the user's group list with the group id
+      for (var member in members) {
+        firestore
+            .collection('users')
+            .where('email', isEqualTo: member.email)
+            .get()
+            .then((value) => {
+                  firestore
+                      .collection('users')
+                      .doc(value.docs.first.id)
+                      .update({
+                    'groups': FieldValue.arrayRemove([groupId]),
+                  })
+                });
+      }
+    } on FirestoreDbFailure catch (e) {
+      Get.snackbar('Error removing Member in DB', e.message,
+          snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      Get.snackbar('Error removing Member in DB', e.toString(),
+          snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  @override
+  Future<void> leaveRoom(String groupId, String userEmail) async {
+    try {
+      //remove the user from the group members list of the group with the given group id
+
+      //get the member of group member whose email is equal to the user email
+      firestore.collection('groups').doc(groupId).get().then((value) => {
+            firestore.collection('groups').doc(groupId).update({
+              'groupMembers': FieldValue.arrayRemove([
+                value
+                    .data()!['groupMembers']
+                    .firstWhere((element) => element['email'] == userEmail)
+              ])
+            })
+          });
+      print('removing of member done');
+      //removing the group id from the user's group list
+      firestore
+          .collection('users')
+          .where('email', isEqualTo: userEmail)
+          .get()
+          .then((value) => {
+                firestore.collection('users').doc(value.docs.first.id).update({
+                  'groups': FieldValue.arrayRemove([groupId])
+                })
+              });
+      print('removing of group id from user done');
+      Get.snackbar('Group Left', 'You have left  the group',
+          snackPosition: SnackPosition.BOTTOM);
+    } on FirestoreDbFailure catch (e) {
+      print(e.message);
+      Get.snackbar('Error removing Member in DB', e.message,
+          snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      print(e.toString());
+      Get.snackbar('Error removing Member in DB', e.toString(),
+          snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  //----------------------Group Messages sepcific operations----------------------//
+
+  Stream<QuerySnapshot> getMessagesStream(String groupId) {
+    try {
+      return firestore
+          .collection('groups')
+          .doc(groupId)
+          .collection('messages')
+          .orderBy('timestamp', descending: true)
+          .snapshots();
+    } on FirebaseException catch (e) {
+      FirestoreDbFailure.code(e.code);
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    }
+    throw UnimplementedError();
+  }
+
+  Future<List<Map<String, dynamic>>> getMessages(groupId) async {
+    final List<Map<String, dynamic>> messages = [];
+    try {
+      final messagesSnapshot = await firestore
+          .collection('groups')
+          .doc(groupId)
+          .collection('messages')
+          .orderBy('timestamp', descending: true)
+          .get();
+
+      if (messagesSnapshot.docs.isNotEmpty) {
+        for (var element in messagesSnapshot.docs) {
+          messages.add(element.data());
+        }
+      }
+      return messages;
+    } on FirebaseException catch (e) {
+      FirestoreDbFailure.code(e.code);
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    }
+
+    return messages;
+  }
+
+  Future<void> sendMessages(String groupId, Message msg) async {
+    try {
+      await firestore.collection('groups').doc(groupId).update({
+        'messages': FieldValue.arrayUnion([msg.toMap()])
+      });
+    } on FirebaseException catch (e) {
+      FirestoreDbFailure.code(e.code);
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  @override
+  Future<void> createChannel(String groupId, Channel channel) async {}
 }

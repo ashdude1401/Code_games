@@ -2,7 +2,7 @@ import 'package:code_games/src/features/creating_rooms/domain/entity/group_entit
 
 abstract class GroupRepository {
   //To create a new room
-  Future<void> createRoom(GroupEntity group) async {}
+  Future<void> createRoom(GroupEntity group,List<Channel> channels) async {}
 
   //get all users
   Future<List<Map<String, dynamic>>> getAllUsers() async {
@@ -14,7 +14,7 @@ abstract class GroupRepository {
   Future<void> deleteRoom(GroupEntity group) async {}
 
   //To update a room
-  Future<void> updateRoom( GroupEntity oldGroup) async {}
+  Future<void> updateRoom(GroupEntity oldGroup) async {}
 
   // Future<List<Map<String, dynamic>>> getAllusers() async {
   //   // Your code logic goes here
@@ -38,4 +38,36 @@ abstract class GroupRepository {
 
   //To get all the rooms joined by a specific user
   Future<void> getRoomsJoinedByUser(String userName) async {}
+
+  //----------------------Group sepcific operations----------------------//
+  //Add members to a group
+
+  Future<void> addMembersToRoom(
+      String groupId, List<GroupMembers> members) async {}
+  //Remove members from a group
+
+  Future<void> removeMembersFromRoom(
+      String groupId, List<GroupMembers> members) async {}
+
+  Future<void> leaveRoom(String groupId, String userEmail) async {}
+
+  Future<void> createChannel(String groupId, Channel channel) async {}
+
+  //Add admins to a group
+
+  //Remove admins from a group
+
+  //Add challenges to a group
+
+  //Remove challenges from a group
+
+  //Update group details
+
+  //Get all the members of a group
+
+  //Get all the admins of a group
+
+  //Get all the challenges of a group
+
+  //Get all the messages of a group
 }

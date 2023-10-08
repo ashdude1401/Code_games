@@ -106,42 +106,43 @@ class _CreateRoomPageState extends State<CreateRoomPage> {
                         border: OutlineInputBorder(),
                       ),
                     ),
-                    const SizedBox(height: 16.0),
-                    TextFormField(
-                      controller: controller.challengeAmount,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter challenge amount';
-                        }
-                        return null;
-                      },
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Challenge Amount',
-                        hintText: 'Enter challenge amount',
-                        hintStyle: TextStyle(color: Colors.black),
-                        labelStyle: TextStyle(color: Colors.black),
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 16.0),
-                    TextFormField(
-                      controller: controller.challengeParameters,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter challenge parameters';
-                        }
-                        return null;
-                      },
-                      decoration: const InputDecoration(
-                        labelText: 'Challenge Parameters',
-                        hintText: 'Enter challenge parameters',
-                        hintStyle: TextStyle(color: Colors.black),
-                        labelStyle: TextStyle(color: Colors.black),
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
+                    // const SizedBox(height: 16.0),
+                    // TextFormField(
+                    //   controller: controller.challengeAmount,
+                    //   validator: (value) {
+                    //     if (value == null || value.isEmpty) {
+                    //       return 'Please enter challenge amount';
+                    //     }
+                    //     return null;
+                    //   },
+                    //   keyboardType: TextInputType.number,
+                    //   decoration: const InputDecoration(
+                    //     labelText: 'Challenge Amount',
+                    //     hintText: 'Enter challenge amount',
+                    //     hintStyle: TextStyle(color: Colors.black),
+                    //     labelStyle: TextStyle(color: Colors.black),
+                    //     border: OutlineInputBorder(),
+                    //   ),
+                    // ),
+                    // const SizedBox(height: 16.0),
+                    // TextFormField(
+                    //   controller: controller.challengeParameters,
+                    //   validator: (value) {
+                    //     if (value == null || value.isEmpty) {
+                    //       return 'Please enter challenge parameters';
+                    //     }
+                    //     return null;
+                    //   },
+                    //   decoration: const InputDecoration(
+                    //     labelText: 'Challenge Parameters',
+                    //     hintText: 'Enter challenge parameters',
+                    //     hintStyle: TextStyle(color: Colors.black),
+                    //     labelStyle: TextStyle(color: Colors.black),
+                    //     border: OutlineInputBorder(),
+                    //   ),
+                    // ),
                     const SizedBox(height: 32.0),
+
                     ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {

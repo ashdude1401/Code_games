@@ -1,5 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:code_games/src/features/creating_rooms/presentation/pages/groups_view/groups_view.dart';
+import 'package:code_games/src/features/creating_rooms/presentation/pages/user_group_list_view/user_groups_list_view.dart';
 
 import 'package:code_games/src/features/core/presentation/pages/home/side_menu/side_menu.dart';
 import 'package:code_games/src/features/core/presentation/stateMangement/home_view_controller.dart';

@@ -29,6 +29,7 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
 
       print('group created');
 
+      List<String> channelIds = [];
       //creating a channel document with the group id and adding the channel data to it
       for (var channel in channels) {
         //creating a Unique id for the channel
@@ -39,25 +40,55 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
             .collection('channels')
             .doc(channel.channelId)
             .set(channel.toMap());
+        channelIds.add(channel.channelId);
       }
-
+      //adding the channel ids to the group document
+      await firestore
+          .collection('groups')
+          .doc(group.groupId)
+          .update({'channels': channelIds});
       print('channel created');
 
+      List<String> messageReffernceId = [];
       //creating messages collection for each channel
       for (var channel in channels) {
-        await firestore
+        //creating a Unique id for the message
+        final messageId = firestore
             .collection('groups')
             .doc(group.groupId)
             .collection('channels')
             .doc(channel.channelId)
             .collection('messages')
             .doc()
+            .id;
+
+        //adding the message reference id to the channel messagesReferenceId
+        messageReffernceId.add(messageId);
+
+        //creating a message document with the message id and adding the message data to it
+        await firestore
+            .collection('groups')
+            .doc(group.groupId)
+            .collection('channels')
+            .doc(channel.channelId)
+            .collection('messages')
+            .doc(messageId)
             .set({
-          'senderId': AuthenticationRepositoryImpl.instance.currentUser.value.userID,
+          'senderId':
+              AuthenticationRepositoryImpl.instance.currentUser.value.userID,
           'messageText': 'Welcome to ${group.groupName}',
           'timestamp': DateTime.now().millisecondsSinceEpoch,
         });
+        await firestore
+            .collection('groups')
+            .doc(group.groupId)
+            .collection('channels')
+            .doc(channel.channelId)
+            .update({'messagesReferenceId': messageReffernceId});
       }
+
+      //adding the message reference id to the channel messagesReferenceId
+
       print('messages created');
       // DocumentReference groupDocRef =
       //   await firestore.collection('groups').add(group.toMap());
@@ -67,6 +98,8 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
           .collection('users')
           .where('email', isEqualTo: group.createdBy)
           .get();
+
+      print('user grouplist updated');
 
       if (userSnapshot.docs.isNotEmpty) {
         String userId = userSnapshot.docs.first.id;

@@ -18,7 +18,10 @@ class _UserGroupListViewState extends State<UserGroupListView> {
 
   @override
   void initState() {
-    controller.getUserRooms();
+    Future.delayed(Duration.zero, () {
+      controller.getUserRooms();
+    });
+
     // TODO: implement initState
     super.initState();
   }

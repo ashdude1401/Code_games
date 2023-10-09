@@ -49,7 +49,7 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
           .update({'channels': channelIds});
       print('channel created');
 
-      List<String> messageReffernceId = [];
+      // List<String> messageReffernceId = [];
       //creating messages collection for each channel
       for (var channel in channels) {
         //creating a Unique id for the message
@@ -62,8 +62,8 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
             .doc()
             .id;
 
-        //adding the message reference id to the channel messagesReferenceId
-        messageReffernceId.add(messageId);
+        // //adding the message reference id to the channel messagesReferenceId
+        // messageReffernceId.add(messageId);
 
         //creating a message document with the message id and adding the message data to it
         await firestore
@@ -84,7 +84,7 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
             .doc(group.groupId)
             .collection('channels')
             .doc(channel.channelId)
-            .update({'messagesReferenceId': messageReffernceId});
+            .update({'messagesReferenceId': messageId});
       }
 
       //adding the message reference id to the channel messagesReferenceId
@@ -398,11 +398,16 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
     return messages;
   }
 
-  Future<void> sendMessages(String groupId, Message msg) async {
+  Future<void> sendMessages(String groupId, String channelId,
+       Message msg) async {
     try {
-      await firestore.collection('groups').doc(groupId).update({
-        'messages': FieldValue.arrayUnion([msg.toMap()])
-      });
+      await firestore
+          .collection('groups')
+          .doc(groupId)
+          .collection('channels')
+          .doc(channelId)
+          .collection('messages')
+          .add(msg.toMap());
     } on FirebaseException catch (e) {
       FirestoreDbFailure.code(e.code);
       Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
@@ -413,4 +418,37 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
 
   @override
   Future<void> createChannel(String groupId, Channel channel) async {}
+
+  @override
+  Future<List<Message>> getChatsOfGroup(String groupId, String channelId) {
+    // TODO: implement getChatsOfGroup
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getChannelOfGroup(String groupId) async {
+    final List<Map<String, dynamic>> channels = [];
+    try {
+      final channelsSnapshot = await firestore
+          .collection('groups')
+          .doc(groupId)
+          .collection('channels')
+          .get();
+
+      if (channelsSnapshot.docs.isNotEmpty) {
+        for (var element in channelsSnapshot.docs) {
+          print(element.data());
+          channels.add(element.data());
+        }
+      }
+      return channels;
+    } on FirebaseException catch (e) {
+      FirestoreDbFailure.code(e.code);
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      print(e.toString());
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    }
+    return channels;
+  }
 }

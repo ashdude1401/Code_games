@@ -31,6 +31,8 @@ class GroupController extends GetxController {
   final challengeList = [];
   final List<GroupMembers> groupMembers = [];
   final List<String> admins = [];
+  final List<Channel> channelsList = [];
+  final currentlySelectedChannelIndex = 0.obs;
 
   @override
   void onClose() {
@@ -39,7 +41,7 @@ class GroupController extends GetxController {
     challengeAmount.dispose();
     challengeParameters.dispose();
     messageController.dispose();
-    streamController.close();
+    // streamController.close();
 
     super.onClose();
   }
@@ -49,6 +51,7 @@ class GroupController extends GetxController {
     // getUserRooms();
     getAllusers();
     userId.value = userController.currentUser.value.userID;
+    // getChannelList();
 
     super.onReady();
   }
@@ -179,6 +182,22 @@ class GroupController extends GetxController {
     print(
         "----------userRoom Length-------------------${userRoomsList.length}");
     isLoading.value = false;
+  }
+
+  Future<void> getChannelList() async {
+    try {
+      isLoading.value = true;
+      List<Map<String, dynamic>> channelList =
+          await controller.getChannelOfGroup(
+              userRooms.value[currentlySelectedGroupIndex.value].groupId);
+      channelsList.clear();
+      for (var element in channelList) {
+        channelsList.add(Channel.fromMap(element));
+      }
+      isLoading.value = false;
+    } catch (e) {
+      print(e.toString());
+    }
   }
 
   //-----------------------All User Specific -------------
@@ -315,20 +334,22 @@ class GroupController extends GetxController {
   final TextEditingController messageController = TextEditingController();
   final userId = "".obs;
 
-  StreamController<QuerySnapshot> streamController =
-      StreamController<QuerySnapshot>();
+  // StreamController<QuerySnapshot> streamController =
+  //     StreamController<QuerySnapshot>();
 
-  Future<void> getMessageStream() async {
-    isLoading.value = true;
-    await streamController.addStream(controller.getMessagesStream(
-        userRooms.value[currentlySelectedGroupIndex.value].groupId));
-    isLoading.value = false;
-  }
+  // Future<void> getMessageStream() async {
+  //   isLoading.value = true;
+  //   await streamController.addStream(controller.getMessagesStream(
+  //       userRooms.value[currentlySelectedGroupIndex.value].groupId));
+  //   isLoading.value = false;
+  // }
 
   List<Message> getMessages(AsyncSnapshot<QuerySnapshot<Object?>> snapshot) {
+    print('Inside Get Messages');
     final messages = snapshot.data!.docs;
     List<Message> messagesList = [];
     for (var message in messages) {
+      print(message);
       messagesList.add(Message.fromMap(message.data() as Map<String, dynamic>));
     }
     return messagesList;
@@ -340,6 +361,7 @@ class GroupController extends GetxController {
       print('message is not empty');
       await controller.sendMessages(
           userRooms.value[currentlySelectedGroupIndex.value].groupId,
+          channelsList[currentlySelectedChannelIndex.value].channelId,
           Message(
               messageText: messageController.text,
               senderId: userController.currentUser.value.userID,

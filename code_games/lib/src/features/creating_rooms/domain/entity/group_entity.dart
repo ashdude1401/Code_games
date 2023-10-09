@@ -148,6 +148,40 @@ class Message {
   }
 }
 
+// class Channel {
+//   String channelId;
+//   String channelName;
+//   String channelDescription;
+//   String channelImg;
+//   String messagesReferenceId;
+
+//   Channel({
+//     required this.channelId,
+//     required this.channelName,
+//     required this.channelDescription,
+//     required this.channelImg,
+//     required this.messagesReferenceId,
+//   });
+
+//   Map<String, dynamic> toMap() {
+//     return {
+//       'channelId': channelId,
+//       'channelName': channelName,
+//       'channelDescription': channelDescription,
+//       'channelImg': channelImg,
+//       'messagesReferenceId': messagesReferenceId,
+//     };
+//   }
+
+//   factory Channel.fromMap(Map<String, dynamic> map) {
+//     return Channel(
+//       channelId: map['channelId'],
+//       channelName: map['channelName'],
+//       channelDescription: map['channelDescription'],
+//       channelImg: map['channelImg'],
+//       messagesReferenceId: map['messagesReferenceId'],
+//     );
+//   }
 class Channel {
   String channelId;
   String channelName;
@@ -183,3 +217,4 @@ class Channel {
     );
   }
 }
+

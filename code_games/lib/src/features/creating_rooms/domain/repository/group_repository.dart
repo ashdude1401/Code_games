@@ -2,7 +2,7 @@ import 'package:code_games/src/features/creating_rooms/domain/entity/group_entit
 
 abstract class GroupRepository {
   //To create a new room
-  Future<void> createRoom(GroupEntity group,List<Channel> channels) async {}
+  Future<void> createRoom(GroupEntity group, List<Channel> channels) async {}
 
   //get all users
   Future<List<Map<String, dynamic>>> getAllUsers() async {
@@ -52,6 +52,12 @@ abstract class GroupRepository {
   Future<void> leaveRoom(String groupId, String userEmail) async {}
 
   Future<void> createChannel(String groupId, Channel channel) async {}
+
+  Future<List<Map<String, dynamic>>> getChannelOfGroup(String groupId) async {
+    return [];
+  }
+
+  Future<void> getChatsOfGroup(String groupId, String channelId) async {}
 
   //Add admins to a group
 

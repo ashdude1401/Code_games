@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:code_games/src/features/creating_rooms/presentation/pages/group_view/group_detail_view.dart';
+import 'package:code_games/src/features/creating_rooms/presentation/pages/group_view/widgets/channel_side_darwer.dart';
 import 'package:flutter/material.dart';
 import 'package:code_games/src/features/creating_rooms/domain/entity/group_entity.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -23,12 +24,18 @@ class _GroupChatViewState extends State<GroupChatView> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    // controller.getMessageStream();
+
+    Future.delayed(Duration.zero, () {
+      controller.getChannelList();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: ChannelSideDrawer(
+        channels: controller.channelsList,
+      ),
       appBar: AppBar(
         centerTitle: true,
         automaticallyImplyLeading: false,
@@ -42,6 +49,15 @@ class _GroupChatViewState extends State<GroupChatView> {
           leading: CircleAvatar(
             backgroundImage: CachedNetworkImageProvider(controller.userRooms
                 .value[controller.currentlySelectedGroupIndex.value].groupImg),
+          ),
+        ),
+        //leading Icon to open the drawer
+        leading: Builder(
+          builder: (context) => IconButton(
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+            icon: const Icon(Icons.menu),
           ),
         ),
         actions: [
@@ -96,6 +112,11 @@ class _GroupChatViewState extends State<GroupChatView> {
                                   .value[controller
                                       .currentlySelectedGroupIndex.value]
                                   .groupId)
+                              .collection('channels')
+                              .doc(controller
+                                  .channelsList[controller
+                                      .currentlySelectedChannelIndex.value]
+                                  .channelId)
                               .collection('messages')
                               .orderBy('timeStamp', descending: true)
                               .snapshots(),
@@ -105,6 +126,10 @@ class _GroupChatViewState extends State<GroupChatView> {
                               if (snapshot.hasData) {
                                 var messageList =
                                     controller.getMessages(snapshot);
+                                for (var message in messageList) {
+                                  print('Inside for in chat View');
+                                  print(message);
+                                }
                                 return ListView.builder(
                                   itemCount: messageList.length,
                                   itemBuilder: (context, index) {

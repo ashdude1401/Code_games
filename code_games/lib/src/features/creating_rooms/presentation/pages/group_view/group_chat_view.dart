@@ -1,12 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:code_games/src/features/creating_rooms/presentation/pages/group_view/group_detail_view.dart';
-import 'package:code_games/src/features/creating_rooms/presentation/pages/group_view/widgets/channel_side_darwer.dart';
 import 'package:flutter/material.dart';
-import 'package:code_games/src/features/creating_rooms/domain/entity/group_entity.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get/get.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../../domain/entity/group_entity.dart';
 import '../../stateMangement/group_controller.dart';
+import 'group_detail_view.dart';
+import 'widgets/channel_side_darwer.dart';
 
 class GroupChatView extends StatefulWidget {
   const GroupChatView({Key? key, required this.group}) : super(key: key);
@@ -22,9 +20,7 @@ class _GroupChatViewState extends State<GroupChatView> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-
     Future.delayed(Duration.zero, () {
       controller.getChannelList();
     });
@@ -33,25 +29,28 @@ class _GroupChatViewState extends State<GroupChatView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: ChannelSideDrawer(
-        channels: controller.channelsList,
-      ),
+      drawer: ChannelSideDrawer(channels: controller.channelsList),
       appBar: AppBar(
         centerTitle: true,
-        automaticallyImplyLeading: false,
-        title: ListTile(
+        title: GestureDetector(
           onTap: () {
             Get.to(() => const GroupDetailView(),
                 transition: Transition.rightToLeft);
           },
-          title: Text(controller.userRooms
-              .value[controller.currentlySelectedGroupIndex.value].groupName),
-          leading: CircleAvatar(
-            backgroundImage: CachedNetworkImageProvider(controller.userRooms
-                .value[controller.currentlySelectedGroupIndex.value].groupImg),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundImage:
+                  CachedNetworkImageProvider(widget.group.groupImg),
+            ),
+            title: Text(widget.group.groupName),
+            // subtitle: Obx(
+            //         () => Text(controller
+            //             .channelsList[
+            //                 controller.currentlySelectedChannelIndex.value]
+            //             .channelName),
+            //       )
           ),
         ),
-        //leading Icon to open the drawer
         leading: Builder(
           builder: (context) => IconButton(
             onPressed: () {
@@ -63,7 +62,7 @@ class _GroupChatViewState extends State<GroupChatView> {
         actions: [
           IconButton(
             onPressed: () {
-              //Pop up menu to show the options to leave the group and other options
+              // Show options to leave the group and other actions
               showDialog(
                 context: context,
                 builder: (context) {
@@ -82,7 +81,7 @@ class _GroupChatViewState extends State<GroupChatView> {
                         ),
                         ListTile(
                           onTap: () {
-                            //Delete the group
+                            // Delete the group
                             Navigator.pop(context);
                           },
                           title: const Text('Delete Group'),
@@ -100,88 +99,46 @@ class _GroupChatViewState extends State<GroupChatView> {
       ),
       body: Column(
         children: [
-          Obx(
-            () => controller.isLoading.value == false
-                ? controller.groupMessages.isNotEmpty
-                    ? Expanded(
-                        child: StreamBuilder<QuerySnapshot>(
-                          stream: FirebaseFirestore.instance
-                              .collection('groups')
-                              .doc(controller
-                                  .userRooms
-                                  .value[controller
-                                      .currentlySelectedGroupIndex.value]
-                                  .groupId)
-                              .collection('channels')
-                              .doc(controller
-                                  .channelsList[controller
-                                      .currentlySelectedChannelIndex.value]
-                                  .channelId)
-                              .collection('messages')
-                              .orderBy('timeStamp', descending: true)
-                              .snapshots(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.active) {
-                              if (snapshot.hasData) {
-                                var messageList =
-                                    controller.getMessages(snapshot);
-                                for (var message in messageList) {
-                                  print('Inside for in chat View');
-                                  print(message);
-                                }
-                                return ListView.builder(
-                                  itemCount: messageList.length,
-                                  itemBuilder: (context, index) {
-                                    bool isUser = messageList[index].senderId ==
-                                        controller.userId.value;
-                                    return Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Align(
-                                        alignment: isUser
-                                            ? Alignment.centerRight
-                                            : Alignment.centerLeft,
-                                        child: Container(
-                                          padding: const EdgeInsets.all(12.0),
-                                          decoration: BoxDecoration(
-                                            color: isUser
-                                                ? Colors.blue
-                                                : Colors.grey[300],
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                          child: Text(
-                                            messageList[index].messageText,
-                                            style: TextStyle(
-                                                color: isUser
-                                                    ? Colors.white
-                                                    : Colors.black),
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                );
-                              } else if (snapshot.hasError) {
-                                return Center(
-                                    child: Text("Error: ${snapshot.error}"));
-                              } else {
-                                return const Center(
-                                    child: CircularProgressIndicator());
-                              }
-                            } else {
-                              return const Center(
-                                  child: CircularProgressIndicator());
-                            }
+          Expanded(
+            child: Obx(
+              () => controller.isLoading.value
+                  ? const Center(child: CircularProgressIndicator())
+                  : controller.messagesList.isNotEmpty
+                      ? ListView.builder(
+                          itemCount: controller.messagesList.length,
+                          controller: controller.scrollController,
+                          itemBuilder: (context, index) {
+                            Message message = controller.messagesList[index];
+                            bool isUser =
+                                message.senderId == controller.userId.value;
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Align(
+                                alignment: isUser
+                                    ? Alignment.centerRight
+                                    : Alignment.centerLeft,
+                                child: Container(
+                                  padding: const EdgeInsets.all(12.0),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        isUser ? Colors.blue : Colors.grey[300],
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                  child: Text(
+                                    message.messageText,
+                                    style: TextStyle(
+                                        color: isUser
+                                            ? Colors.white
+                                            : Colors.black),
+                                  ),
+                                ),
+                              ),
+                            );
                           },
-                        ),
-                      )
-                    : const Center(
-                        child: Text("No messages to Show"),
-                      )
-                : const Center(child: CircularProgressIndicator()),
+                        )
+                      : const Center(child: Text("No messages to Show")),
+            ),
           ),
-          controller.groupMessages.isEmpty ? const Spacer() : Container(),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -203,7 +160,12 @@ class _GroupChatViewState extends State<GroupChatView> {
                   ),
                 ),
                 IconButton(
-                  onPressed: () => controller.sendMessage(),
+                  onPressed: () {
+                    if (controller.messageController.text.isNotEmpty) {
+                      controller.sendMessage();
+                      controller.messageController.clear();
+                    }
+                  },
                   icon: const Icon(Icons.send),
                 ),
               ],
@@ -211,6 +173,32 @@ class _GroupChatViewState extends State<GroupChatView> {
           ),
         ],
       ),
+      //bottomNavigationBar to to home view , create group view and profile view
+      // bottomNavigationBar: BottomNavigationBar(
+      //   currentIndex: 0,
+      //   items: const [
+      //     BottomNavigationBarItem(
+      //       icon: Icon(Icons.home),
+      //       label: 'Home',
+      //     ),
+      //     BottomNavigationBarItem(
+      //         icon: Icon(Icons.group_add), label: 'Create Group'),
+      //     BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+      //   ],
+      //   onTap: (index) {
+      //     switch (index) {
+      //       case 0:
+      //         Get.offAllNamed('/home');
+      //         break;
+      //       case 1:
+      //         Get.offAllNamed('/createGroup');
+      //         break;
+      //       case 2:
+      //         Get.offAllNamed('/profile');
+      //         break;
+      //     }
+      //   },
+      // ),
     );
   }
 }

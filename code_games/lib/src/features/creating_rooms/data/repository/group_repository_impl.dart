@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:code_games/src/features/auth/data/repository/authentication_repository_impl.dart';
 import 'package:code_games/src/features/creating_rooms/data/repository/exception/firestore_expception.dart';
@@ -77,7 +79,7 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
           'senderId':
               AuthenticationRepositoryImpl.instance.currentUser.value.userID,
           'messageText': 'Welcome to ${group.groupName}',
-          'timestamp': DateTime.now().millisecondsSinceEpoch,
+          'timestamp': DateTime.now().toIso8601String(),
         });
         await firestore
             .collection('groups')
@@ -398,8 +400,8 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
     return messages;
   }
 
-  Future<void> sendMessages(String groupId, String channelId,
-       Message msg) async {
+  Future<void> sendMessages(
+      String groupId, String channelId, Message msg) async {
     try {
       await firestore
           .collection('groups')
@@ -450,5 +452,37 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
       Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
     }
     return channels;
+  }
+
+  // todo to add this function in the group repository
+  Future<List<Map<String, dynamic>>> getMessagesOfGroupsChannel(
+      String groupId, String channelId) async {
+    //getting the messages of the group channel with the given group id and channel id
+    final List<Map<String, dynamic>> messages = [];
+    try {
+      final messagesSnapshot = await firestore
+          .collection('groups')
+          .doc(groupId)
+          .collection('channels')
+          .doc(channelId)
+          .collection('messages')
+          .orderBy('timestamp', descending: true)
+          .get();
+      print(
+          'messagesSnapshot.docs.isNotEmpty ${messagesSnapshot.docs.isNotEmpty}');
+      if (messagesSnapshot.docs.isNotEmpty) {
+        for (var element in messagesSnapshot.docs) {
+          messages.add(element.data());
+          print('--------------messages: ${element.data()}}---------------');
+        }
+      }
+      return messages;
+    } on FirebaseException catch (e) {
+      FirestoreDbFailure.code(e.code);
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    }
+    return messages;
   }
 }

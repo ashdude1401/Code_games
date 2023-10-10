@@ -29,7 +29,11 @@ class ChannelSideDrawer extends StatelessWidget {
             ),
             title: Text(channel),
             selected: index == controller.currentlySelectedChannelIndex.value,
-            onTap: () {},
+            onTap: () {
+              controller.currentlySelectedChannelIndex.value = index;
+              controller.getChannelMessagesList();
+              Navigator.pop(context);
+            },
           );
         },
       ),

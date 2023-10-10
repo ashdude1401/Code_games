@@ -34,6 +34,8 @@ class GroupController extends GetxController {
   final List<Channel> channelsList = [];
   final currentlySelectedChannelIndex = 0.obs;
 
+  final messagesList = <Message>[].obs;
+
   @override
   void onClose() {
     groupName.dispose();
@@ -50,6 +52,7 @@ class GroupController extends GetxController {
   void onReady() {
     // getUserRooms();
     getAllusers();
+    // getUserRooms();
     userId.value = userController.currentUser.value.userID;
     // getChannelList();
 
@@ -158,6 +161,8 @@ class GroupController extends GetxController {
     admins.clear();
     challengeAmount.clear();
     challengeParameters.clear();
+    //disposing scroll controller
+    scrollController.dispose();
   }
 
   Future<void> getUserRooms() async {
@@ -187,13 +192,22 @@ class GroupController extends GetxController {
   Future<void> getChannelList() async {
     try {
       isLoading.value = true;
+      //getting the channel list from firebase of the selected group
+      currentlySelectedChannelIndex.value = 0;
       List<Map<String, dynamic>> channelList =
           await controller.getChannelOfGroup(
               userRooms.value[currentlySelectedGroupIndex.value].groupId);
+      print('retrieved channel list');
       channelsList.clear();
       for (var element in channelList) {
         channelsList.add(Channel.fromMap(element));
       }
+      print('channel list length ${channelsList.length}');
+
+      //getting the message list from firebase of the selected channel
+      await getChannelMessagesList();
+      print(
+          'retrieved message list of channel ${channelsList[currentlySelectedChannelIndex.value].channelName}');
       isLoading.value = false;
     } catch (e) {
       print(e.toString());
@@ -328,11 +342,18 @@ class GroupController extends GetxController {
   }
 
 //-----------------chat related---------------------------------------------------------------
-  // get all message  returning
-  List<Message> groupMessages = [];
 
   final TextEditingController messageController = TextEditingController();
+  final ScrollController scrollController = ScrollController();
   final userId = "".obs;
+
+  void scrollToBottom() {
+    scrollController.animateTo(
+      scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
+  }
 
   // StreamController<QuerySnapshot> streamController =
   //     StreamController<QuerySnapshot>();
@@ -344,6 +365,22 @@ class GroupController extends GetxController {
   //   isLoading.value = false;
   // }
 
+  Future<void> getChannelMessagesList() async {
+    //getting the message list from firebase of the selected channel
+    List<Map<String, dynamic>> messageList =
+        await controller.getMessagesOfGroupsChannel(
+            userRooms.value[currentlySelectedGroupIndex.value].groupId,
+            channelsList[currentlySelectedChannelIndex.value].channelId);
+
+    //reverse the list to get the latest messages at the bottom
+    messageList = messageList.reversed.toList();
+    messagesList.clear();
+    for (var element in messageList) {
+      messagesList.add(Message.fromMap(element));
+    }
+    print('message list length ${messagesList.length}');
+  }
+
   List<Message> getMessages(AsyncSnapshot<QuerySnapshot<Object?>> snapshot) {
     print('Inside Get Messages');
     final messages = snapshot.data!.docs;
@@ -352,6 +389,7 @@ class GroupController extends GetxController {
       print(message);
       messagesList.add(Message.fromMap(message.data() as Map<String, dynamic>));
     }
+
     return messagesList;
   }
 
@@ -367,7 +405,13 @@ class GroupController extends GetxController {
               senderId: userController.currentUser.value.userID,
               timestamp: DateTime.now()));
       print("message sent");
+      //update the message list
+      await getChannelMessagesList();
+      print("message list updated");
       messageController.clear();
+
+      //scroll to bottom
+      scrollToBottom();
       // getMessages();
     }
   }

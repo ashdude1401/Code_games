@@ -5,19 +5,14 @@ import 'package:code_games/src/features/users/presentation/pages/profile_view/pr
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../auth/data/repository/authentication_repository_impl.dart';
+class UserProfileView extends StatelessWidget {
 
+  UserProfileView({Key? key, required this.user, required this.showEditProfile})
+      : super(key: key);
 
-class ProfileView extends StatefulWidget {
-  ProfileView({Key? key}) : super(key: key);
+  final UserEntity user;
+  final bool showEditProfile;
 
-  @override
-  State<ProfileView> createState() => _ProfileViewState();
-}
-
-class _ProfileViewState extends State<ProfileView> {
-  final controller = Get.find<AuthenticationRepositoryImpl>();
-  // final gropuController = Get.find<GroupController>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,23 +22,25 @@ class _ProfileViewState extends State<ProfileView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                      onPressed: () {
-                        Get.to(() => const ProfileEditView(),
-                            transition: Transition.rightToLeftWithFade);
-                      },
-                      child: const Text("Edit Profile")),
-                ],
-              ),
+              showEditProfile
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                            onPressed: () {
+                              Get.to(() => const ProfileEditView(),
+                                  transition: Transition.rightToLeftWithFade);
+                            },
+                            child: const Text("Edit Profile")),
+                      ],
+                    )
+                  : Container(),
               CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.grey,
 
-                backgroundImage: CachedNetworkImageProvider(controller
-                    .currentUser.value.profilePicture), // Display profile image
+                backgroundImage: CachedNetworkImageProvider(
+                    user.profilePicture), // Display profile image
               ),
 
               const SizedBox(height: 20),
@@ -56,8 +53,7 @@ class _ProfileViewState extends State<ProfileView> {
               TextFormField(
                 readOnly: true,
                 // Update name when text changes
-                controller: TextEditingController(
-                    text: controller.currentUser.value.fullName),
+                controller: TextEditingController(text: user.fullName),
                 // Set initial value
               ),
               const SizedBox(height: 20),
@@ -70,9 +66,7 @@ class _ProfileViewState extends State<ProfileView> {
               TextFormField(
                   readOnly: true, // Update bio when text changes
                   controller: TextEditingController(
-                    text: controller.currentUser.value.bio.isEmpty
-                        ? "I am cool"
-                        : controller.currentUser.value.bio,
+                    text: user.bio.isEmpty ? "I am cool" : user.bio,
                   ) // Set initial value
                   ),
               const SizedBox(height: 20),
@@ -85,7 +79,7 @@ class _ProfileViewState extends State<ProfileView> {
                 readOnly: true,
                 // onChanged: (value) =>
                 //     _bio = value, // Update bio when text changes
-                controller: TextEditingController(text: controller.currentUser.value.email),
+                controller: TextEditingController(text: user.email),
                 // Set initial value
               ), // Display user's email
             ],

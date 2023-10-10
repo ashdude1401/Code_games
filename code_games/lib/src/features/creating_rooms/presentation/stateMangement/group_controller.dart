@@ -52,9 +52,9 @@ class GroupController extends GetxController {
   void onReady() {
     // getUserRooms();
     getAllusers();
-    // getUserRooms();
+    getUserRooms();
     userId.value = userController.currentUser.value.userID;
-    // getChannelList();
+    getChannelList();
 
     super.onReady();
   }

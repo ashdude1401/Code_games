@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:code_games/src/features/creating_rooms/presentation/pages/user_group_list_view/user_groups_list_view.dart';
 
 import 'package:code_games/src/features/core/presentation/pages/home/side_menu/side_menu.dart';
 import 'package:code_games/src/features/core/presentation/stateMangement/home_view_controller.dart';
@@ -64,54 +63,82 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
           animationController.reverse();
         }
       },
-      child: Stack(
-        children: [
-          // Side Menu
-          SideMenu(
-            forward: forwarAnimaition,
-            reverse: reverseAnimation,
-          ),
-          AnimatedBuilder(
-              animation: animationController,
-              builder: (context, child) {
-                return Transform(
-                  transform: Matrix4.rotationY(animation.value * 0.5),
-                  child: Transform.translate(
-                    offset: Offset(size.width * (animation.value * 0.75), 0),
-                    child: Transform.scale(
-                      scale: 1 - (animation.value * 0.3),
-                      child: ClipRRect(
-                        borderRadius:
-                            BorderRadius.circular(40 * animation.value),
-                        child: Scaffold(
-                          appBar: AppBar(
-                            automaticallyImplyLeading: false,
-                            centerTitle: true,
-                            leading: GestureDetector(
-                              onTap: () {
-                                animationController.forward();
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: CircleAvatar(
-                                  backgroundImage: CachedNetworkImageProvider(
-                                    controller.profilePicture.value,
+      child: Scaffold(
+          body: Stack(
+            children: [
+              // Side Menu
+              SideMenu(
+                forward: forwarAnimaition,
+                reverse: reverseAnimation,
+              ),
+              AnimatedBuilder(
+                  animation: animationController,
+                  builder: (context, child) {
+                    return Transform(
+                      transform: Matrix4.rotationY(animation.value * 0.5),
+                      child: Transform.translate(
+                        offset:
+                            Offset(size.width * (animation.value * 0.75), 0),
+                        child: Transform.scale(
+                          scale: 1 - (animation.value * 0.3),
+                          child: ClipRRect(
+                            borderRadius:
+                                BorderRadius.circular(40 * animation.value),
+                            child: Scaffold(
+                              appBar: AppBar(
+                                automaticallyImplyLeading: false,
+                                centerTitle: true,
+                                leading: GestureDetector(
+                                  onTap: () {
+                                    animationController.forward();
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: CircleAvatar(
+                                      backgroundImage:
+                                          CachedNetworkImageProvider(
+                                        controller.profilePicture.value,
+                                      ),
+                                    ),
                                   ),
                                 ),
+                                title: const Text("Code Games"),
                               ),
+                              body: child ?? Container(),
                             ),
-                            title: const Text("Code Games"),
                           ),
-                          body: child ?? Container(),
                         ),
                       ),
-                    ),
-                  ),
-                );
+                    );
+                  },
+                  child: Obx(() => homeViewContoller.currentPage)),
+            ],
+          ),
+          //bottomNaviagtionBar showing all the pages in the app
+          bottomNavigationBar: Obx(
+            () => BottomNavigationBar(
+              currentIndex: homeViewContoller.currentIndex.value,
+              onTap: (index) {
+                homeViewContoller.currentIndex.value = index;
+                homeViewContoller.currentPage = homeViewContoller.pages[index];
               },
-              child: Obx(() => homeViewContoller.currentPage)),
-        ],
-      ),
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home),
+                  label: 'Home',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.group),
+                  label: 'Groups',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.person),
+                  label: 'Profile',
+                ),
+              ],
+            ),
+          )
+          ),
     );
   }
 }

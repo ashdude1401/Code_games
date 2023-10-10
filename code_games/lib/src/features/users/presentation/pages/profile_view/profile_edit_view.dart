@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:code_games/src/features/auth/data/repository/authentication_repository_impl.dart';
 import 'package:code_games/src/features/creating_rooms/presentation/stateMangement/group_controller.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -17,7 +16,7 @@ class ProfileEditView extends StatefulWidget {
 
 class _ProfileEditViewState extends State<ProfileEditView> {
   final controller = Get.find<AuthenticationRepositoryImpl>();
-  final gropuController = Get.put(GroupController());
+  final gropuController = Get.find<GroupController>();
 
   late XFile? _pickedImage; // Variable to store the picked image file
 
@@ -37,6 +36,7 @@ class _ProfileEditViewState extends State<ProfileEditView> {
 
   @override
   void initState() {
+
     // TODO: implement initState
     super.initState();
     name.text = controller.currentUser.value.fullName;

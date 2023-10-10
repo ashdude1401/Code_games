@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:code_games/src/features/creating_rooms/presentation/stateMangement/group_controller.dart';
 
-import 'package:code_games/src/features/users/presentation/pages/profile_view/profile_view.dart';
+import 'package:code_games/src/features/users/presentation/pages/all_users_view/user_profile_view.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -32,7 +32,8 @@ class _AllUsersViewState extends State<AllUsersView> {
                       itemBuilder: (context, index) => ListTile(
                         onTap: () {
                           Get.to(
-                              () => ProfileView(
+                              () => UserProfileView(
+                                  showEditProfile: false,
                                   user: controller.allUsers.value[index]),
                               transition: Transition.rightToLeft);
                         },

@@ -7,9 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../../auth/data/repository/authentication_repository_impl.dart';
+import '../../../../../users/presentation/pages/profile_view/profile_view.dart';
 import '../../../stateMangement/home_view_controller.dart';
 import '../../../../../creating_rooms/presentation/pages/create_join_view/new_group.dart';
-import '../../../../../users/presentation/pages/profile_view/profile_view.dart';
+
 
 class SideMenu extends StatefulWidget {
   const SideMenu({
@@ -60,7 +61,7 @@ class _SideMenuState extends State<SideMenu> {
                 ListTile(
                   onTap: () {
                     homeViewController.currentPage = ProfileView(
-                      user: controller.currentUser.value,
+                     
                     );
                     widget.reverse();
                   },

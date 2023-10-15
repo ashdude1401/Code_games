@@ -28,12 +28,12 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
     homeViewContoller.currentPage = homeViewContoller.pages[0];
     // Initialize the animation controller
     animationController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 500));
+        vsync: this, duration: const Duration(milliseconds: 300));
 
     // Define the animation with an ease-out curve
     animation = CurvedAnimation(
         parent: animationController,
-        curve: Curves.easeOut,
+        curve: Curves.fastEaseInToSlowEaseOut,
         reverseCurve: Curves.easeIn);
 
     // TODO: implement initState
@@ -137,8 +137,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                 ),
               ],
             ),
-          )
-          ),
+          )),
     );
   }
 }

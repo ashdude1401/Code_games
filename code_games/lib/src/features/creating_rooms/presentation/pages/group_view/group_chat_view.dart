@@ -22,6 +22,28 @@ class _GroupChatViewState extends State<GroupChatView> {
   @override
   void initState() {
     super.initState();
+
+    // Listen to real-time messages
+    Future.delayed(Duration.zero, () {
+      controller
+          .getMessagesStream(
+        controller.userRooms.value[controller.currentlySelectedGroupIndex.value]
+            .groupId,
+        controller.channelsList[controller.currentlySelectedChannelIndex.value]
+            .channelId,
+      )
+          .listen((messages) {
+        setState(() {
+          //clear the messages list
+          controller.messagesList.clear();
+          // Update the messages list when new messages are received
+          controller.messagesList.value = messages;
+          // Scroll to the bottom to show the new message
+          controller.scrollToBottom();
+        });
+      });
+    });
+
     Future.delayed(Duration.zero, () {
       controller.getChannelList();
     });
@@ -284,9 +306,11 @@ class _GroupChatViewState extends State<GroupChatView> {
                     ),
                     child: TextField(
                       controller: controller.messageController,
+                      maxLines: 3,
                       decoration: const InputDecoration(
                         border: InputBorder.none,
                         hintText: 'Type your message...',
+                        focusedBorder: InputBorder.none,
                       ),
                     ),
                   ),

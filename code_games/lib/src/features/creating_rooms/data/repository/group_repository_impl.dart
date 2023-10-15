@@ -1,5 +1,3 @@
-
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:code_games/src/features/auth/data/repository/authentication_repository_impl.dart';
 import 'package:code_games/src/features/creating_rooms/data/repository/exception/firestore_expception.dart';
@@ -189,8 +187,7 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
     return userRooms;
   }
 
-
-  Future<GroupEntity> getGroup(String joinId) async{
+  Future<GroupEntity> getGroup(String joinId) async {
     GroupEntity group = GroupEntity(
       groupId: '',
       groupName: '',
@@ -225,8 +222,8 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
       print("Error: $e");
     }
     return group;
-  
   }
+
   @override
   Future<void> deleteRoom(GroupEntity group) {
     // TODO: implement deleteRoom
@@ -402,11 +399,14 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
 
   //----------------------Group Messages sepcific operations----------------------//
 
-  Stream<QuerySnapshot> getMessagesStream(String groupId) {
+  Stream<QuerySnapshot> getMessagesStream(String groupId, String channelId) {
+    //getting the messages of the group channel with the given group id and channel id
     try {
       return firestore
           .collection('groups')
           .doc(groupId)
+          .collection('channels')
+          .doc(channelId)
           .collection('messages')
           .orderBy('timestamp', descending: true)
           .snapshots();
@@ -522,12 +522,32 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
     return channels;
   }
 
+  Future<CollectionReference<Map<String, dynamic>>> getMessagesOfGroupsChannelCollection(
+      String groupId, String channelId) async {
+    try {
+      return firestore
+          .collection('groups')
+          .doc(groupId)
+          .collection('channels')
+          .doc(channelId)
+          .collection('messages');
+    } on FirebaseException catch (e) {
+      FirestoreDbFailure.code(e.code);
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      print(e.toString());
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    }
+    throw UnimplementedError();
+  }
+
   // todo to add this function in the group repository
   Future<List<Map<String, dynamic>>> getMessagesOfGroupsChannel(
       String groupId, String channelId) async {
     //getting the messages of the group channel with the given group id and channel id
     final List<Map<String, dynamic>> messages = [];
     try {
+
       final messagesSnapshot = await firestore
           .collection('groups')
           .doc(groupId)

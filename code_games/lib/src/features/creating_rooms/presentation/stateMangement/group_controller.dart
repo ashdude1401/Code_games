@@ -411,19 +411,43 @@ class GroupController extends GetxController {
   // }
 
   Future<void> getChannelMessagesList() async {
-    //getting the message list from firebase of the selected channel
-    List<Map<String, dynamic>> messageList =
-        await controller.getMessagesOfGroupsChannel(
-            userRooms.value[currentlySelectedGroupIndex.value].groupId,
-            channelsList[currentlySelectedChannelIndex.value].channelId);
+    try {
+      isLoading.value = true;
+      //getting the message collection reference from firebase of the selected channel
+      // Get messages of the specified group channel in reverse order
+      final messageCollectionReference =
+          await controller.getMessagesOfGroupsChannelCollection(
+              userRooms.value[currentlySelectedGroupIndex.value].groupId,
+              channelsList[currentlySelectedChannelIndex.value].channelId);
 
-    //reverse the list to get the latest messages at the bottom
-    messageList = messageList.reversed.toList();
-    messagesList.clear();
-    for (var element in messageList) {
-      messagesList.add(Message.fromMap(element));
+      final messageSnapshot = await messageCollectionReference
+          .orderBy('timestamp', descending: true)
+          .get();
+
+      messagesList.clear();
+      for (var message in messageSnapshot.docs) {
+        messagesList
+            .add(Message.fromMap(message.data() as Map<String, dynamic>));
+      }
+      print('message list length ${messagesList.length}');
+      isLoading.value = false;
+    } catch (e) {
+      print(e.toString());
+      isLoading.value = false;
     }
-    print('message list length ${messagesList.length}');
+    // //getting the message list from firebase of the selected channel
+    // List<Map<String, dynamic>> messageList =
+    //     await controller.getMessagesOfGroupsChannel(
+    //         userRooms.value[currentlySelectedGroupIndex.value].groupId,
+    //         channelsList[currentlySelectedChannelIndex.value].channelId);
+
+    // //reverse the list to get the latest messages at the bottom
+    // messageList = messageList.reversed.toList();
+    // messagesList.clear();
+    // for (var element in messageList) {
+    //   messagesList.add(Message.fromMap(element));
+    // }
+    // print('message list length ${messagesList.length}');
   }
 
   List<Message> getMessages(AsyncSnapshot<QuerySnapshot<Object?>> snapshot) {
@@ -435,34 +459,55 @@ class GroupController extends GetxController {
       messagesList.add(Message.fromMap(message.data() as Map<String, dynamic>));
     }
 
-    return messagesList;
+    return messagesList.reversed.toList();
   }
 
   Future<void> sendMessage() async {
     print('inside send message');
-    if (messageController.text.isNotEmpty) {
-      print('message is not empty');
-      await controller.sendMessages(
-          userRooms.value[currentlySelectedGroupIndex.value].groupId,
-          channelsList[currentlySelectedChannelIndex.value].channelId,
-          Message(
-              messageText: messageController.text,
-              senderId: userController.currentUser.value.userID,
-              timestamp: DateTime.now(),
-              senderEmail: userController.currentUser.value.email,
-              senderImg: userController.currentUser.value.profilePicture,
-              senderName: userController.currentUser.value.fullName,
-              messageId: ''));
-      print("message sent");
-      //update the message list
-      await getChannelMessagesList();
-      print("message list updated");
-      messageController.clear();
 
-      //scroll to bottom
-      scrollToBottom();
-      // getMessages();
+    try {
+      if (messageController.text.isNotEmpty) {
+        print('message is not empty');
+        await controller.sendMessages(
+            userRooms.value[currentlySelectedGroupIndex.value].groupId,
+            channelsList[currentlySelectedChannelIndex.value].channelId,
+            Message(
+                messageText: messageController.text,
+                senderId: userController.currentUser.value.userID,
+                timestamp: DateTime.now(),
+                senderEmail: userController.currentUser.value.email,
+                senderImg: userController.currentUser.value.profilePicture,
+                senderName: userController.currentUser.value.fullName,
+                messageId: ''));
+        print("message sent");
+        //update the message list
+        await getChannelMessagesList();
+        print("message list updated");
+        messageController.clear();
+
+        // Scroll to the bottom to show the new message
+        scrollController.animateTo(
+          scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    } catch (e) {
+      print(e.toString());
     }
+  }
+
+  Stream<List<Message>> getMessagesStream(String groupId, String channelId) {
+    return controller
+        .getMessagesStream(groupId, channelId)
+        .map((querySnapshot) {
+      List<Message> messagesList = [];
+      for (var message in querySnapshot.docs) {
+        messagesList
+            .add(Message.fromMap(message.data() as Map<String, dynamic>));
+      }
+      return messagesList.reversed.toList();
+    });
   }
 
   // Future<void> createChallenge(){

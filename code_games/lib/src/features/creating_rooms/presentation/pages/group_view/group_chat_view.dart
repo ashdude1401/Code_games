@@ -1,3 +1,4 @@
+import 'package:code_games/src/features/auth/data/repository/authentication_repository_impl.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -59,6 +60,30 @@ class _GroupChatViewState extends State<GroupChatView> {
             icon: const Icon(Icons.menu),
           ),
         ),
+        //showing the current channel name at bottom of the appbar
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(20.0),
+          child: Obx(
+            () => controller.isLoading == false
+                ? Container(
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    color: Colors.deepPurpleAccent[100],
+                    child: Text(
+                        controller
+                            .channelsList[
+                                controller.currentlySelectedChannelIndex.value]
+                            .channelName,
+                        style: const TextStyle(
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        )),
+                  )
+                : const Text("Loading..."),
+          ),
+        ),
+
         actions: [
           IconButton(
             onPressed: () {
@@ -109,28 +134,135 @@ class _GroupChatViewState extends State<GroupChatView> {
                           controller: controller.scrollController,
                           itemBuilder: (context, index) {
                             Message message = controller.messagesList[index];
-                            bool isUser =
-                                message.senderId == controller.userId.value;
+                            bool isUser = message.senderEmail ==
+                                AuthenticationRepositoryImpl
+                                    .instance.currentUser.value.email;
                             return Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Align(
                                 alignment: isUser
                                     ? Alignment.centerRight
                                     : Alignment.centerLeft,
-                                child: Container(
-                                  padding: const EdgeInsets.all(12.0),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        isUser ? Colors.blue : Colors.grey[300],
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ),
-                                  child: Text(
-                                    message.messageText,
-                                    style: TextStyle(
-                                        color: isUser
-                                            ? Colors.white
-                                            : Colors.black),
-                                  ),
+                                child: Column(
+                                  crossAxisAlignment: isUser
+                                      ? CrossAxisAlignment.end
+                                      : CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: isUser
+                                          ? MainAxisAlignment.end
+                                          : MainAxisAlignment.start,
+                                      children: [
+                                        if (isUser == false)
+                                          CircleAvatar(
+                                            backgroundImage:
+                                                CachedNetworkImageProvider(
+                                                    message.senderImg),
+                                            radius: 16,
+                                          ),
+                                        if (isUser == false)
+                                          const SizedBox(width: 8),
+                                        if (isUser == false)
+                                          Text(
+                                            message.senderName,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    // Container(
+                                    //   padding: const EdgeInsets.all(8.0),
+                                    //   decoration: BoxDecoration(
+                                    //     color: isUser
+                                    //         ? Colors.blue
+                                    //         : Colors.grey[300],
+                                    //     borderRadius:
+                                    //         BorderRadius.circular(8.0),
+                                    //   ),
+                                    //   child: ListTile(
+                                    //     title: isUser
+                                    //         ? Text(
+                                    //             message.messageText,
+                                    //             style: TextStyle(
+                                    //                 color: isUser
+                                    //                     ? Colors.white
+                                    //                     : Colors.black),
+                                    //           )
+                                    //         : null,
+                                    //     subtitle: Text(
+                                    //       //time and date of the message
+                                    //       "${message.timestamp.hour}:${message.timestamp.minute} on ${message.timestamp.day}/${message.timestamp.month}/${message.timestamp.year}  ",
+                                    //       style: TextStyle(
+                                    //           color: isUser
+                                    //               ? Colors.white60
+                                    //               : Colors.grey[600]),
+                                    //     ),
+                                    //   ),
+                                    // ),
+                                    GestureDetector(
+                                      onLongPress: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              title: const Text('Options'),
+                                              content: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  ListTile(
+                                                    onTap: () {
+                                                      // controller
+                                                      //     .deleteMessage(
+                                                      //         message);
+                                                      Navigator.pop(context);
+                                                    },
+                                                    title: const Text(
+                                                        'Delete Message'),
+                                                    leading: const Icon(
+                                                        Icons.delete),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(8.0),
+                                        decoration: BoxDecoration(
+                                          color: isUser
+                                              ? Colors.blue
+                                              : Colors.grey[300],
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment: isUser
+                                              ? CrossAxisAlignment.end
+                                              : CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              message.messageText,
+                                              style: TextStyle(
+                                                  color: isUser
+                                                      ? Colors.white
+                                                      : Colors.black),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              "${message.timestamp.hour}:${message.timestamp.minute} on ${message.timestamp.day}/${message.timestamp.month}/${message.timestamp.year}",
+                                              style: TextStyle(
+                                                  fontSize: 10,
+                                                  color: isUser
+                                                      ? Colors.white60
+                                                      : Colors.black),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
@@ -202,3 +334,74 @@ class _GroupChatViewState extends State<GroupChatView> {
     );
   }
 }
+
+
+/**
+ * ListView.builder(
+                          itemCount: controller.messagesList.length,
+                          controller: controller.scrollController,
+                          itemBuilder: (context, index) {
+                            Message message = controller.messagesList[index];
+                            bool isUser =
+                                message.senderId == controller.userId.value;
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: isUser
+                                    ? CrossAxisAlignment.end
+                                    : CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      if (!isUser)
+                                        CircleAvatar(
+                                          backgroundImage:
+                                              CachedNetworkImageProvider(
+                                                  message.senderImg),
+                                          radius: 16,
+                                        ),
+                                      if (!isUser) const SizedBox(width: 8),
+                                      Text(
+                                        message.senderName,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.all(8.0),
+                                    decoration: BoxDecoration(
+                                      color: isUser
+                                          ? Colors.blue
+                                          : Colors.grey[300],
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          message.messageText,
+                                          style: TextStyle(
+                                              color: isUser
+                                                  ? Colors.white
+                                                  : Colors.black),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          "${message.timestamp.hour}:${message.timestamp.minute}",
+                                          style: TextStyle(
+                                              color: isUser
+                                                  ? Colors.white
+                                                  : Colors.black),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        )
+ */

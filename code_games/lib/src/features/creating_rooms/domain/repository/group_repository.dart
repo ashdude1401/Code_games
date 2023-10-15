@@ -59,6 +59,12 @@ abstract class GroupRepository {
 
   Future<void> getChatsOfGroup(String groupId, String channelId) async {}
 
+  Future<void> sendMessage(
+      String groupId, String channelId, Message message) async {}
+
+  Future<void> deleteMessage(
+      String groupId, String channelId, String messageId) async {}
+
   //Add admins to a group
 
   //Remove admins from a group

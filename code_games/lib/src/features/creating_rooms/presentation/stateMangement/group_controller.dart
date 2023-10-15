@@ -98,10 +98,15 @@ class GroupController extends GetxController {
         email: userController.email.value));
     admins.add(userController.email.value);
 
+    //creating unique join id for the group to be used for joining made up of group name and random number
+    String uniqueJoinId = groupName.text +
+        (DateTime.now().millisecondsSinceEpoch).toString().substring(0, 5);
+
     //creating three default channels in firebase general , announcements and Challenges
 
     // Create a Group object with the entered data
     final newGroup = GroupEntity(
+        uniqueJoinId: uniqueJoinId,
         groupName: groupName.text,
         groupDescription: groupDescription.text,
         groupImg: profilePicture,
@@ -163,6 +168,46 @@ class GroupController extends GetxController {
     challengeParameters.clear();
     //disposing scroll controller
     scrollController.dispose();
+  }
+
+  Future<void> joinGroup(String joinGroupId) async {
+    isLoading.value = true;
+    //getting the group details from firebase
+    final group = await controller.getGroup(joinGroupId);
+    //getting the channel list from firebase of the selected group
+    if (group == null) {
+      isLoading.value = false;
+      Get.snackbar('Error', 'Group does not exist',
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+    //adding the user to the group members list only if the user is not already a member
+    if (group.groupMembers
+        .any((element) => element.email == userController.email.value)) {
+      isLoading.value = false;
+      Get.snackbar('Error', 'You are already a member of this group',
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    //adding the user to the group members list
+    group.groupMembers.add(GroupMembers(
+        userName: userController.userName.value,
+        userImg: userController.profilePicture.value,
+        userScore: '0',
+        userRank: '0',
+        email: userController.email.value));
+    //updating the group members list in firebase
+    await controller.addMembersToRoom(group.groupId, group.groupMembers);
+    getUserRooms();
+    Get.snackbar('Congratulations!!', 'You have joined the group',
+        snackPosition: SnackPosition.BOTTOM);
+    isLoading.value = false;
+    Get.back();
+  }
+
+  Future<GroupEntity> getGroup(String joinGroupId) {
+    return controller.getGroup(joinGroupId);
   }
 
   Future<void> getUserRooms() async {
@@ -403,7 +448,11 @@ class GroupController extends GetxController {
           Message(
               messageText: messageController.text,
               senderId: userController.currentUser.value.userID,
-              timestamp: DateTime.now()));
+              timestamp: DateTime.now(),
+              senderEmail: userController.currentUser.value.email,
+              senderImg: userController.currentUser.value.profilePicture,
+              senderName: userController.currentUser.value.fullName,
+              messageId: ''));
       print("message sent");
       //update the message list
       await getChannelMessagesList();
@@ -415,7 +464,21 @@ class GroupController extends GetxController {
       // getMessages();
     }
   }
+
+  // Future<void> createChallenge(){
+
+  // }
+
+//   Future<void> deleteMessage(Message msg) {
+//   //delete message from firebase
+//     con
+
+//   //delete message from message list
+//   //update the message list
+//   //scroll to bottom
+// }
 }
+
 
 // function to get id for firebase collections 
 

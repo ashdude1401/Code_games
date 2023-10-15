@@ -8,6 +8,7 @@ class GroupEntity {
   List<String> channelReferenceId; // List of messages in the group
   List<String> admins;
   String createdBy;
+  String uniqueJoinId;
 
   GroupEntity({
     required this.groupId,
@@ -19,6 +20,7 @@ class GroupEntity {
     required this.admins,
     required this.createdBy,
     required this.channelReferenceId,
+    required this.uniqueJoinId,
   });
 
   Map<String, dynamic> toMap() {
@@ -32,6 +34,7 @@ class GroupEntity {
       'channelReferenceId': channelReferenceId,
       'admins': admins,
       'createdBy': createdBy,
+      'uniqueJoinId': uniqueJoinId,
     };
   }
 
@@ -48,6 +51,7 @@ class GroupEntity {
       channelReferenceId: List<String>.from(map['channelReferenceId']),
       admins: List<String>.from(map['admins']),
       createdBy: map['createdBy'],
+      uniqueJoinId: map['uniqueJoinId'],
     );
   }
 }
@@ -89,12 +93,14 @@ class GroupMembers {
 }
 
 class Challenge {
+  String challengeId;
   String challengeName;
   String challengeDescription;
   String challengeAmount;
   String challengeParameters;
 
   Challenge({
+    required this.challengeId,
     required this.challengeName,
     required this.challengeDescription,
     required this.challengeAmount,
@@ -103,6 +109,7 @@ class Challenge {
 
   Map<String, dynamic> toMap() {
     return {
+      'challengeId': challengeId,
       'challengeName': challengeName,
       'challengeDescription': challengeDescription,
       'challengeAmount': challengeAmount,
@@ -112,6 +119,7 @@ class Challenge {
 
   factory Challenge.fromMap(Map<String, dynamic> map) {
     return Challenge(
+      challengeId: map['challengeId'],
       challengeName: map['challengeName'],
       challengeDescription: map['challengeDescription'],
       challengeAmount: map['challengeAmount'],
@@ -121,29 +129,45 @@ class Challenge {
 }
 
 class Message {
+  String messageId; // ID of the message (auto-generated)
   String senderId; // ID of the user sending the message
   String messageText;
   DateTime timestamp;
+  String senderEmail;
+  String senderName;
+  String senderImg;
 
   Message({
+    required this.messageId,
     required this.senderId,
     required this.messageText,
     required this.timestamp,
+    required this.senderEmail,
+    required this.senderName,
+    required this.senderImg,
   });
 
   Map<String, dynamic> toMap() {
     return {
+      'messageId': messageId,
       'senderId': senderId,
       'messageText': messageText,
       'timestamp': timestamp.toIso8601String(),
+      'senderEmail': senderEmail,
+      'senderName': senderName,
+      'senderImg': senderImg,
     };
   }
 
   factory Message.fromMap(Map<String, dynamic> map) {
     return Message(
+      messageId: map['messageId'],
       senderId: map['senderId'],
       messageText: map['messageText'],
       timestamp: DateTime.parse(map['timestamp']),
+      senderEmail: map['senderEmail'],
+      senderImg: map['senderImg'],
+      senderName: map['senderName'],
     );
   }
 }

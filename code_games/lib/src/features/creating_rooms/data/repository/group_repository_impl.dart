@@ -1,4 +1,4 @@
-import 'dart:math';
+
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:code_games/src/features/auth/data/repository/authentication_repository_impl.dart';
@@ -76,10 +76,17 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
             .collection('messages')
             .doc(messageId)
             .set({
+          'messageId': messageId,
           'senderId':
               AuthenticationRepositoryImpl.instance.currentUser.value.userID,
           'messageText': 'Welcome to ${group.groupName}',
           'timestamp': DateTime.now().toIso8601String(),
+          'senderEmail':
+              AuthenticationRepositoryImpl.instance.currentUser.value.email,
+          'senderName':
+              AuthenticationRepositoryImpl.instance.currentUser.value.fullName,
+          'senderImg': AuthenticationRepositoryImpl
+              .instance.currentUser.value.profilePicture,
         });
         await firestore
             .collection('groups')
@@ -182,6 +189,44 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
     return userRooms;
   }
 
+
+  Future<GroupEntity> getGroup(String joinId) async{
+    GroupEntity group = GroupEntity(
+      groupId: '',
+      groupName: '',
+      groupDescription: '',
+      groupImg: '',
+      challengesRefferenceId: [],
+      groupMembers: [],
+      admins: [],
+      createdBy: '',
+      channelReferenceId: [],
+      uniqueJoinId: '',
+    );
+    try {
+      // Getting the user with the email id
+      var groupSnapshot = await firestore
+          .collection('groups')
+          .where('uniqueJoinId', isEqualTo: joinId)
+          .get();
+
+      if (groupSnapshot.docs.isNotEmpty) {
+        for (var element in groupSnapshot.docs) {
+          group = GroupEntity.fromMap(element.data());
+        }
+      }
+    } on FirebaseException catch (e) {
+      final errMsg = FirestoreDbFailure.code(e.code).message;
+      Get.snackbar('Error', errMsg, snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      Get.snackbar('Error Room Not Found', e.toString(),
+          snackPosition: SnackPosition.BOTTOM);
+
+      print("Error: $e");
+    }
+    return group;
+  
+  }
   @override
   Future<void> deleteRoom(GroupEntity group) {
     // TODO: implement deleteRoom
@@ -403,13 +448,36 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
   Future<void> sendMessages(
       String groupId, String channelId, Message msg) async {
     try {
+      //creating a Unique id for the message
+      final messageId = firestore
+          .collection('groups')
+          .doc(groupId)
+          .collection('channels')
+          .doc(channelId)
+          .collection('messages')
+          .doc()
+          .id;
+      //creating a message document with the message id and adding the message data to it
       await firestore
           .collection('groups')
           .doc(groupId)
           .collection('channels')
           .doc(channelId)
           .collection('messages')
-          .add(msg.toMap());
+          .doc(messageId)
+          .set({
+        'messageId': messageId,
+        'senderId':
+            AuthenticationRepositoryImpl.instance.currentUser.value.userID,
+        'messageText': msg.messageText,
+        'timestamp': DateTime.now().toIso8601String(),
+        'senderEmail':
+            AuthenticationRepositoryImpl.instance.currentUser.value.email,
+        'senderName':
+            AuthenticationRepositoryImpl.instance.currentUser.value.fullName,
+        'senderImg': AuthenticationRepositoryImpl
+            .instance.currentUser.value.profilePicture,
+      });
     } on FirebaseException catch (e) {
       FirestoreDbFailure.code(e.code);
       Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
@@ -484,5 +552,32 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
       Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
     }
     return messages;
+  }
+
+  @override
+  Future<void> deleteMessage(
+      String groupId, String channelId, String messageId) async {
+    //deleting the message with the given message id from the group channel with the given group id and channel id
+    try {
+      await firestore
+          .collection('groups')
+          .doc(groupId)
+          .collection('channels')
+          .doc(channelId)
+          .collection('messages')
+          .doc(messageId)
+          .delete();
+    } on FirebaseException catch (e) {
+      FirestoreDbFailure.code(e.code);
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  @override
+  Future<void> sendMessage(String groupId, String channelId, Message message) {
+    // TODO: implement sendMessage
+    throw UnimplementedError();
   }
 }

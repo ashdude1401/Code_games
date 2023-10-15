@@ -59,6 +59,7 @@ dependencies:
   #for picking the image
   image_picker: ^1.0.4
   firebase_storage: ^11.2.7
+  clipboard: ^0.1.3
 
 dev_dependencies:
   flutter_test:

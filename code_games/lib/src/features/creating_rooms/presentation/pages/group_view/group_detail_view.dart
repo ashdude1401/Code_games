@@ -1,3 +1,4 @@
+import 'package:clipboard/clipboard.dart';
 import 'package:code_games/src/features/creating_rooms/presentation/pages/group_view/add_member_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -74,6 +75,41 @@ class _GroupDetailViewState extends State<GroupDetailView> {
                   },
                   iconSize: 40,
                   icon: const Icon(CupertinoIcons.person_add_solid),
+                ),
+                const SizedBox(width: 20),
+                //sharing group joing id
+                IconButton(
+                  iconSize: 40,
+                  onPressed: () {
+                    //show dialog with group id to copy to  share with friends
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text("Group Joining Id"),
+                        content: Text(controller
+                            .userRooms
+                            .value[controller.currentlySelectedGroupIndex.value]
+                            .uniqueJoinId),
+                        actions: [
+                          TextButton(
+                              onPressed: () {
+                                //copy to clipboard
+                                FlutterClipboard.copy(controller
+                                        .userRooms
+                                        .value[controller
+                                            .currentlySelectedGroupIndex.value]
+                                        .uniqueJoinId)
+                                    .then((value) => Get.snackbar("Copied",
+                                        "Group ID copied to clipboard"));
+
+                                Navigator.pop(context);
+                              },
+                              child: const Text("Copy"))
+                        ],
+                      ),
+                    );
+                  },
+                  icon: const Icon(CupertinoIcons.share_solid),
                 ),
                 const SizedBox(width: 20),
                 IconButton(

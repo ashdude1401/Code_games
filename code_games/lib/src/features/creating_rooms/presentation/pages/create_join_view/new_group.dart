@@ -1,3 +1,4 @@
+import 'package:code_games/src/features/creating_rooms/presentation/pages/create_join_view/join_group.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -49,7 +50,12 @@ class NewGroupView extends StatelessWidget {
           const SizedBox(
             height: 10,
           ),
-          ElevatedButton(onPressed: () {}, child: const Text("Join Group")),
+          ElevatedButton(
+              onPressed: () {
+                Get.to(() => JoinGroupView(),
+                    transition: Transition.rightToLeftWithFade);
+              },
+              child: const Text("Join Group")),
         ],
       ),
     );

@@ -7,9 +7,16 @@ import 'package:get/get.dart';
 class ChannelSideDrawer extends StatelessWidget {
   final List<Channel> channels;
 
+  final String groupId;
+  final int channelIndex;
+  final VoidCallback onTap;
+
   ChannelSideDrawer({
     Key? key,
     required this.channels,
+    required this.groupId,
+    required this.channelIndex,
+    required this.onTap,
   }) : super(key: key);
 
   final controller = Get.find<GroupController>();
@@ -28,10 +35,15 @@ class ChannelSideDrawer extends StatelessWidget {
                   CachedNetworkImageProvider(channels[index].channelImg),
             ),
             title: Text(channel),
-            selected: index == controller.currentlySelectedChannelIndex.value,
+            // assign selected property to check if the current index is selected or not
+            selected: controller.currentlySelectedChannelIndex.value == index,
             onTap: () {
+              print("Channel Index: $index");
+
               controller.currentlySelectedChannelIndex.value = index;
-              controller.getChannelMessagesList();
+
+              onTap();
+
               Navigator.pop(context);
             },
           );

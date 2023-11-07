@@ -213,6 +213,7 @@ class AuthenticationRepositoryImpl extends GetxController
   final Rx<String> profilePicture = defaultProfilePicture.obs;
   final Rx<String> email = ''.obs;
   final Rx<String> bio = ''.obs;
+  
   Rx<UserEntity> currentUser = UserEntity(
       userID: '',
       email: '',

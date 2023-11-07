@@ -109,6 +109,7 @@ class _GroupDetailViewState extends State<GroupDetailView> {
                       ),
                     );
                   },
+                  //share group joing id
                   icon: const Icon(CupertinoIcons.share_solid),
                 ),
                 const SizedBox(width: 20),

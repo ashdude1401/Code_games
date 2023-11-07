@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:code_games/src/features/core/presentation/pages/home/side_menu/side_menu.dart';
@@ -23,8 +25,13 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   late final AnimationController animationController;
   late final Animation<double> animation;
 
+  bool isConnection = false;
+
   @override
   void initState() {
+
+
+
     homeViewContoller.currentPage = homeViewContoller.pages[0];
     // Initialize the animation controller
     animationController = AnimationController(
@@ -48,9 +55,13 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
     animationController.forward();
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+
+    
 
     return GestureDetector(
       onTap: () => animationController.reverse(),

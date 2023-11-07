@@ -402,14 +402,18 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
   Stream<QuerySnapshot> getMessagesStream(String groupId, String channelId) {
     //getting the messages of the group channel with the given group id and channel id
     try {
+      //
       return firestore
           .collection('groups')
           .doc(groupId)
           .collection('channels')
           .doc(channelId)
           .collection('messages')
-          .orderBy('timestamp', descending: true)
-          .snapshots();
+          //getting the messages in descending order of timestamp
+          .orderBy('timestamp', descending: true) // todo to add limit
+          .snapshots(
+              //getting the messages with the metadata changes i.e. when a new message is added or deleted
+              includeMetadataChanges: true);
     } on FirebaseException catch (e) {
       FirestoreDbFailure.code(e.code);
       Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
@@ -419,31 +423,31 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
     throw UnimplementedError();
   }
 
-  Future<List<Map<String, dynamic>>> getMessages(groupId) async {
-    final List<Map<String, dynamic>> messages = [];
-    try {
-      final messagesSnapshot = await firestore
-          .collection('groups')
-          .doc(groupId)
-          .collection('messages')
-          .orderBy('timestamp', descending: true)
-          .get();
+  // Future<List<Map<String, dynamic>>> getMessages(groupId) async {
+  //   final List<Map<String, dynamic>> messages = [];
+  //   try {
+  //     final messagesSnapshot = await firestore
+  //         .collection('groups')
+  //         .doc(groupId)
+  //         .collection('messages')
+  //         .orderBy('timestamp', descending: true)
+  //         .get();
 
-      if (messagesSnapshot.docs.isNotEmpty) {
-        for (var element in messagesSnapshot.docs) {
-          messages.add(element.data());
-        }
-      }
-      return messages;
-    } on FirebaseException catch (e) {
-      FirestoreDbFailure.code(e.code);
-      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
-    } catch (e) {
-      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
-    }
+  //     if (messagesSnapshot.docs.isNotEmpty) {
+  //       for (var element in messagesSnapshot.docs) {
+  //         messages.add(element.data());
+  //       }
+  //     }
+  //     return messages;
+  //   } on FirebaseException catch (e) {
+  //     FirestoreDbFailure.code(e.code);
+  //     Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+  //   } catch (e) {
+  //     Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+  //   }
 
-    return messages;
-  }
+  //   return messages;
+  // }
 
   Future<void> sendMessages(
       String groupId, String channelId, Message msg) async {
@@ -511,7 +515,7 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
           channels.add(element.data());
         }
       }
-      return channels;
+      return Future.value(channels);
     } on FirebaseException catch (e) {
       FirestoreDbFailure.code(e.code);
       Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
@@ -519,11 +523,11 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
       print(e.toString());
       Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
     }
-    return channels;
+    return Future.value(channels);
   }
 
-  Future<CollectionReference<Map<String, dynamic>>> getMessagesOfGroupsChannelCollection(
-      String groupId, String channelId) async {
+  CollectionReference<Map<String, dynamic>>
+      getMessagesOfGroupsChannelCollection(String groupId, String channelId) {
     try {
       return firestore
           .collection('groups')
@@ -547,7 +551,6 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
     //getting the messages of the group channel with the given group id and channel id
     final List<Map<String, dynamic>> messages = [];
     try {
-
       final messagesSnapshot = await firestore
           .collection('groups')
           .doc(groupId)

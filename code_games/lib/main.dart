@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:code_games/src/features/creating_rooms/data/repository/group_repository_impl.dart';
 import 'package:code_games/src/features/creating_rooms/presentation/stateMangement/group_controller.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -20,6 +22,17 @@ void main() async {
       .then((value) => Get.put(GroupRepositoryImpl()))
       .then((value) => Get.put(GroupController()));
 
+  Future<void> checkInternet() async {
+    try {
+      final result = await InternetAddress.lookup('example.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        print('connected');
+      }
+    } on SocketException catch (_) {
+      print('not connected');
+    }
+  }
+
   runApp(const MyApp());
 }
 
@@ -33,6 +46,21 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
       home: HomeView(),
+    );
+  }
+}
+
+// NoInternt connection widget Page
+
+class NoInternetConnection extends StatelessWidget {
+  const NoInternetConnection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: Text("No Internet Connection"),
+      ),
     );
   }
 }

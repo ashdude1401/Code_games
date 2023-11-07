@@ -11,7 +11,7 @@ class HomeViewController extends GetxController {
   final controller = Get.find<AuthenticationRepositoryImpl>();
   List<Widget> pages = [
     NewGroupView(),
-    const UserGroupListView(),
+    UserGroupListView(),
     ProfileView(),
     const AllUsersView()
   ];

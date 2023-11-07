@@ -26,8 +26,13 @@ class _UserGroupListViewState extends State<UserGroupListView> {
     super.initState();
   }
 
+  void getChannelList() {
+    controller.getChannelList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final groups = controller.userRooms;
     return Container(
         child: Obx(
       () => controller.isLoading.value == true
@@ -47,16 +52,24 @@ class _UserGroupListViewState extends State<UserGroupListView> {
                     //showing all userRooms
                     Expanded(
                       child: ListView.builder(
-                        itemCount: controller.userRooms.value.length,
+                        itemCount: groups.value.length,
                         itemBuilder: (context, index) {
+                          final group = groups.value[index];
                           return ListTile(
                             onTap: () {
                               controller.currentlySelectedGroupIndex.value =
                                   index;
-                              Get.to(
-                                  () => GroupChatView(
-                                      group: controller.userRooms.value[index]),
-                                  transition: Transition.rightToLeftWithFade);
+                              // Get.to(
+                              //     () => GroupChatView(
+                              //         group: controller.userRooms.value[index]),
+                              //     transition: Transition.rightToLeftWithFade);
+
+                              Get.to(() => GroupChatView(
+                                    groupId: group.groupId,
+                                    channelIndex: 0,
+                                    groupName: group.groupName,
+                                    groupImg: group.groupImg,
+                                  ));
                             },
                             title: Text(
                                 controller.userRooms.value[index].groupName),

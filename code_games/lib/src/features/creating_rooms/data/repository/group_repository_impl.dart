@@ -603,4 +603,62 @@ class GroupRepositoryImpl extends GetxController implements GroupRepository {
     // TODO: implement sendMessage
     throw UnimplementedError();
   }
+
+  // @override
+  // Future<Challenge> fetchChallenge(String challengeId) {
+
+  //   //fetching challenges from the firebase
+  //       DocumentSnapshot challengeDoc =
+  //       await FirebaseFirestore.instance.collection('challenges').doc(challengeId).get();
+
+  //   // Deciphering the Challenge data
+  //   Map<String, dynamic> challengeData = challengeDoc.data() as Map<String, dynamic>;
+
+  //   // Now populating the challenge
+  //   final chanllenge
+
+  //   // For the Participants subcollection
+  //   QuerySnapshot participantsQuery = await FirebaseFirestore.instance
+  //       .collection('challenges')
+  //       .doc(challengeId)
+  //       .collection('participants')
+  //       .get();
+
+  //   // Deciphering participant data
+  //   List<QueryDocumentSnapshot> participantDocs = participantsQuery.docs;
+
+  //   for (var participantDoc in participantDocs) {
+  //     // Accessing participant data
+  //     Map<String, dynamic> participantData = participantDoc.data() as Map<String, dynamic>;
+
+  //     String userId = participantData['userId'];
+  //     String displayName = participantData['displayName'];
+  //     // Access other participant fields...
+  //   }
+  // } catch (e) {
+  //   print('Error fetching challenge data: $e');
+  // }
+
+  //   // TODO: implement fetchChallenge
+  //   throw UnimplementedError();
+  // }
+
+  @override
+  Future<List<Participant>> fetchParticipant(String challengId) {
+    // TODO: implement fetchParticipant
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> postChallengeAndParticipants(
+      Challenge challenge, List<Participant> participants) {
+    // TODO: implement postChallengeAndParticipants
+    throw UnimplementedError();
+  }
+  
+  @override
+  Future<Challenge> fetchChallenge(String challengeId) {
+    // TODO: implement fetchChallenge
+    throw UnimplementedError();
+  }
 }

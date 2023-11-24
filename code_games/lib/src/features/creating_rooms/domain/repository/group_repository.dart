@@ -65,6 +65,27 @@ abstract class GroupRepository {
   Future<void> deleteMessage(
       String groupId, String channelId, String messageId) async {}
 
+  Future<void> postChallengeAndParticipants(
+      Challenge challenge, List<Participant> participants) async {}
+
+  Future<Challenge> fetchChallenge(String challengeId) async {
+    return Challenge(
+        challengeId: '',
+        title: '',
+        description: '',
+        rules: [],
+        startDate: DateTime.now(),
+        endDate: DateTime.now(),
+        checkInTime: '',
+        rewards: [],
+        currencyType: '',
+        participantLimit: 0,
+        privacy: '');
+  }
+
+  Future<List<Participant>> fetchParticipant(String challengId) async {
+    return [];
+  }
   //Add admins to a group
 
   //Remove admins from a group

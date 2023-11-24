@@ -107,7 +107,7 @@ class _GroupChatViewState extends State<GroupChatView>
     // Called whenever the window metrics change, including when the keyboard opens or closes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Scroll to the bottom of the list when the keyboard opens
-      _scrollToBottom();
+      _goToBottom();
     });
   }
 
@@ -301,52 +301,9 @@ class _GroupChatViewState extends State<GroupChatView>
           ? channels.isNotEmpty
               ? Column(
                   children: [
-                    Expanded(
-                      child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                        stream: _msgStream,
-                        builder: (context, snapshot) {
-                          if (snapshot.hasError) {
-                            return const Text('Something went wrong');
-                          }
-
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Center(
-                                child: CircularProgressIndicator());
-                          }
-
-                          final messages = snapshot.data!.docs
-                              .map((DocumentSnapshot document) =>
-                                  Message.fromMap(
-                                      document.data()! as Map<String, dynamic>))
-                              .toList()
-                              .reversed
-                              .toList();
-
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            // Scroll to the bottom of the list whenever new messages are received
-                            scrollController.animateTo(
-                              scrollController.position.maxScrollExtent,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeOut,
-                            );
-                          });
-
-                          return ListView.builder(
-                            key: _scrollableKey,
-                            controller: scrollController,
-                            itemCount: messages.length,
-                            itemBuilder: (context, index) {
-                              Message message = messages[index];
-                              bool isUser = message.senderEmail ==
-                                  AuthenticationRepositoryImpl
-                                      .instance.currentUser.value.email;
-                              return MessageBubble(
-                                  isUser: isUser, message: message);
-                            },
-                          );
-                        },
-                      ),
+                    MessagesListFromFirebase(
+                      msgStream: _msgStream,
+                      scrollController: scrollController,
                     ),
                     //sending messages button and textfield
                     Column(
@@ -404,6 +361,62 @@ class _GroupChatViewState extends State<GroupChatView>
                 )
               : const Center(child: Text('No channels found'))
           : const Center(child: CircularProgressIndicator()),
+    );
+  }
+}
+
+class MessagesListFromFirebase extends StatelessWidget {
+  const MessagesListFromFirebase({
+    super.key,
+    required Stream<QuerySnapshot<Map<String, dynamic>>> msgStream,
+    required this.scrollController,
+  }) : _msgStream = msgStream;
+
+  final Stream<QuerySnapshot<Map<String, dynamic>>> _msgStream;
+  final ScrollController scrollController;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: _msgStream,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Text('Something went wrong');
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final messages = snapshot.data!.docs
+              .map((DocumentSnapshot document) =>
+                  Message.fromMap(document.data()! as Map<String, dynamic>))
+              .toList()
+              .reversed
+              .toList();
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            // Scroll to the bottom of the list whenever new messages are received
+            scrollController.animateTo(
+              scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          });
+
+          return ListView.builder(
+            controller: scrollController,
+            itemCount: messages.length,
+            itemBuilder: (context, index) {
+              Message message = messages[index];
+              bool isUser = message.senderEmail ==
+                  AuthenticationRepositoryImpl.instance.currentUser.value.email;
+              return MessageBubble(isUser: isUser, message: message);
+            },
+          );
+        },
+      ),
     );
   }
 }

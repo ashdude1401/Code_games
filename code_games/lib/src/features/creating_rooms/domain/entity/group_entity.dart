@@ -94,39 +94,118 @@ class GroupMembers {
 
 class Challenge {
   String challengeId;
-  String challengeName;
-  String challengeDescription;
-  String challengeAmount;
-  String challengeParameters;
+  String title;
+  String description;
+  List<String> rules;
+  DateTime startDate;
+  DateTime endDate;
+  String checkInTime;
+  List<String> rewards;
+  String currencyType;
+  int participantLimit;
+  String privacy;
 
   Challenge({
     required this.challengeId,
-    required this.challengeName,
-    required this.challengeDescription,
-    required this.challengeAmount,
-    required this.challengeParameters,
+    required this.title,
+    required this.description,
+    required this.rules,
+    required this.startDate,
+    required this.endDate,
+    required this.checkInTime,
+    required this.rewards,
+    required this.currencyType,
+    required this.participantLimit,
+    required this.privacy,
   });
+  
 
   Map<String, dynamic> toMap() {
     return {
       'challengeId': challengeId,
-      'challengeName': challengeName,
-      'challengeDescription': challengeDescription,
-      'challengeAmount': challengeAmount,
-      'challengeParameters': challengeParameters,
+      'title': title,
+      'description': description,
+      'rules': rules,
+      'startDate': startDate,
+      'endDate': endDate,
+      'checkInTime': checkInTime,
+      'rewards': rewards,
+      'currencyType': currencyType,
+      'participantLimit': participantLimit,
+      'privacy': privacy,
     };
   }
 
   factory Challenge.fromMap(Map<String, dynamic> map) {
     return Challenge(
       challengeId: map['challengeId'],
-      challengeName: map['challengeName'],
-      challengeDescription: map['challengeDescription'],
-      challengeAmount: map['challengeAmount'],
-      challengeParameters: map['challengeParameters'],
+      title: map['title'],
+      description: map['description'],
+      rules: List<String>.from(map['rules']?.map((x) => x)),
+      startDate: DateTime.parse(map['startDate']),
+      endDate: DateTime.parse(map['endDate']),
+      checkInTime: map['checkInTime'],
+      rewards: List<String>.from(map['rewards']?.map((x) => x)),
+      currencyType: map['currencyType'],
+      participantLimit: map['participantLimit'],
+      privacy: map['privacy'],
     );
   }
 }
+
+class Participant {
+  String userId; // User ID as Document ID
+  String displayName;
+  String email;
+  DateTime joinedDate;
+  bool isActive;
+  List<Map<String, dynamic>> progress; // Array or nested documents tracking daily check-ins or task submissions
+  int currentStreak;
+  int totalDays;
+  bool isChallengeCompleted;
+
+  Participant({
+    required this.userId,
+    required this.displayName,
+    required this.email,
+    required this.joinedDate,
+    required this.isActive,
+    required this.progress,
+    required this.currentStreak,
+    required this.totalDays,
+    required this.isChallengeCompleted,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'userId': userId,
+      'displayName': displayName,
+      'email': email,
+      'joinedDate': joinedDate,
+      'isActive': isActive,
+      'progress': progress,
+      'currentStreak': currentStreak,
+      'totalDays': totalDays,
+      'isChallengeCompleted': isChallengeCompleted,
+    };
+  }
+
+  factory Participant.fromMap(Map<String, dynamic> map) {
+    return Participant(
+      userId: map['userId'],
+      displayName: map['displayName'],
+      email: map['email'],
+      joinedDate: DateTime.parse(map['joinedDate']),
+      isActive: map['isActive'],
+      progress: List<Map<String, dynamic>>.from(map['progress']?.map((x) => x)),
+      currentStreak: map['currentStreak'],
+      totalDays: map['totalDays'],
+      isChallengeCompleted: map['isChallengeCompleted'],
+    );
+  }
+}
+
+
 
 class Message {
   String messageId; // ID of the message (auto-generated)
